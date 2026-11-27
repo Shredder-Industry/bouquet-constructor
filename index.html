@@ -102,7 +102,7 @@ a.btn.primary{color:var(--accent-ink)}
 .receipt li span:first-child{min-width:0}
 .receipt .empty{color:var(--muted)}
 .total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:10px}
-.total b{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.total b{font-family:var(--display);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 #copied{color:var(--ok);font-size:13px;font-weight:600}
 #copyFallback{width:100%;min-height:120px;font:13px/1.5 var(--body);border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);color:var(--ink)}
@@ -126,7 +126,7 @@ a.btn.primary{color:var(--accent-ink)}
     padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
     background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -8px 24px rgba(0,0,0,.08)}
   .mbar .sum{display:flex;flex-direction:column;line-height:1.25;min-width:0}
-  .mbar .sum b{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+  .mbar .sum b{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
   .mbar .sum span{color:var(--muted);font-size:12px}
   .mbar .row{flex-wrap:nowrap}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -224,6 +224,12 @@ a.btn.primary{color:var(--accent-ink)}
 <script>
 (() => {
   const {kinds: KINDS, wraps: WRAPS, ribbons: RIBBONS, gifts: GIFTS, presets: PRESETS} = applyShop(LIBRARY, SHOP);
+  const GIFT_MAX = 3;
+  // ground points next to the bouquet: front-left, front-right, back-left, back-right
+  const GIFT_SLOTS = {
+    side:[{x:74,y:450},{x:328,y:458},{x:46,y:376},{x:356,y:384}],
+    top: [{x:66,y:398},{x:334,y:398},{x:54,y:104},{x:346,y:104}],
+  };
   const BIND = {x:200, y:400};
   const BOUNDS = {x0:30, x1:370, y0:40, y1:330};
   const STORE_KEY = `bouquet-workshop-v2-${SHOP.id}`;
@@ -336,16 +342,20 @@ a.btn.primary{color:var(--accent-ink)}
 
   /* the one gate for any outside bouquet, from localStorage or from a link anyone could send: returns a clean state patch or null */
   function sanitize(saved) {
-    if (!saved || !Array.isArray(saved.stems) || !WRAPS[saved.wrap] || !RIBBONS[saved.ribbon]) return null;
+    if (!saved || typeof saved !== 'object' || !Array.isArray(saved.stems)) return null;
     const gifts = Object.fromEntries(Object.entries(saved.gifts || {})
-      .filter(([k, n]) => GIFTS[k] && Number.isInteger(n) && n > 0).map(([k, n]) => [k, Math.min(n, GIFT_MAX)]));
-    const card = {on: saved.card?.on === true, text: String(saved.card?.text || '').slice(0, CARD.maxLength)};
+      .filter(([k, n]) => hasKey(GIFTS, k) && Number.isInteger(n) && n > 0).map(([k, n]) => [k, Math.min(n, GIFT_MAX)]));
+    /* cut by code points: a half emoji would make encodeURIComponent throw on every render */
+    const card = {on: saved.card?.on === true, text: Array.from(String(saved.card?.text || '')).slice(0, CARD.maxLength).join('')};
     const num = v => (Number.isFinite(v) ? v : 0);
-    const stems = saved.stems.filter(s => s && KINDS[s.kind] && Number.isInteger(s.id)).slice(0, MAX_STEMS)
+    const stems = saved.stems.filter(s => s && hasKey(KINDS, s.kind) && Number.isInteger(s.id)).slice(0, MAX_STEMS)
       .map(s => ({id: s.id, kind: s.kind, rot: num(s.rot), lift: num(s.lift), manual: s.manual === true,
         x: clamp(num(s.x), BOUNDS.x0, BOUNDS.x1), y: clamp(num(s.y), BOUNDS.y0, BOUNDS.y1)}));
     const nextId = Math.max(Number.isInteger(saved.nextId) ? saved.nextId : 1, ...stems.map(s => s.id + 1));
-    return {stems, gifts, card, nextId, wrap: saved.wrap, ribbon: saved.ribbon,
+    /* a wrap or ribbon the shop stopped selling falls back to its first one; the flowers stay */
+    const wrap = hasKey(WRAPS, saved.wrap) ? saved.wrap : Object.keys(WRAPS)[0];
+    const ribbon = hasKey(RIBBONS, saved.ribbon) ? saved.ribbon : Object.keys(RIBBONS)[0];
+    return {stems, gifts, card, nextId, wrap, ribbon,
       seed: Number.isInteger(saved.seed) ? saved.seed : 1, view: saved.view === 'top' ? 'top' : 'side'};
   }
   function load() {
@@ -409,11 +419,11 @@ a.btn.primary{color:var(--accent-ink)}
   let undoState = null, toastTimer = 0;
   const TOAST_MS = 6000;
   function hideToast() { document.getElementById('toast').hidden = true; undoState = null; clearTimeout(toastTimer); }
-  function replaceWithUndo(next, message) {
+  function replaceWithUndo(next, message, {rearrange = true} = {}) {
     const hadContent = state.stems.length || Object.keys(state.gifts).length;
     const prev = state;
     selected = null;
-    update(next);
+    update(next, {rearrange});
     if (!hadContent) return;
     undoState = prev;
     document.getElementById('toastText').textContent = message;
@@ -565,7 +575,8 @@ a.btn.primary{color:var(--accent-ink)}
     renderStage();
     svg.querySelector(`.head[data-id="${drag.id}"]`)?.classList.add('dragging');
   });
-  const endDrag = () => { if (drag?.moved) save(); drag = null; };
+  /* a moved stem changes the layout link inside the order message */
+  const endDrag = () => { if (drag?.moved) { save(); renderOrderLinks(orderLines()); } drag = null; };
   svg.addEventListener('pointerup', endDrag);
   svg.addEventListener('pointercancel', endDrag);
 
@@ -725,6 +736,7 @@ a.btn.primary{color:var(--accent-ink)}
     state = {...state, stems: state.stems.map(s => s.id !== selected ? s : {...s, manual:true,
       x: clamp(s.x + dir[0] * step, BOUNDS.x0, BOUNDS.x1), y: clamp(s.y + dir[1] * step, BOUNDS.y0, BOUNDS.y1)})};
     save();
+    renderOrderLinks(orderLines());
     renderStage();
   });
   document.getElementById('shuffle').addEventListener('click', () =>
@@ -753,7 +765,8 @@ a.btn.primary{color:var(--accent-ink)}
   if (location.hash.startsWith(LINK_PREFIX)) {
     const clean = sanitize(decodeBouquet(location.hash.slice(LINK_PREFIX.length)));
     history.replaceState(null, '', location.pathname + location.search);
-    if (clean) replaceWithUndo({...clean, view: state.view}, 'Открыт букет по ссылке');
+    /* positions come from the link as they are: re-arranging would move the stems the customer never touched */
+    if (clean) replaceWithUndo({...clean, view: state.view}, 'Открыт букет по ссылке', {rearrange: false});
   }
 })();
 </script>

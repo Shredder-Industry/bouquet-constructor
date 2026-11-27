@@ -44,3 +44,8 @@ test('applyShop does not mutate its inputs', () => {
   applyShop(library, shop);
   assert.equal(JSON.stringify([library, shop]), before);
 });
+
+test('applyShop does not treat inherited names like toString as stocked items', () => {
+  const crafted = { ...shop, presets: [{ name: 'Подделка', wrap: 'kraft', ribbon: 'sage', items: { toString: 3 } }] };
+  assert.deepEqual(applyShop(library, crafted).presets, []);
+});
