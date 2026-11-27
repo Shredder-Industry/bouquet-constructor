@@ -179,7 +179,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         <h2>Открытка</h2>
         <div class="swatches" id="cardMode" role="group" aria-label="Открытка">
           <button type="button" class="sw" data-card="off" aria-pressed="true">Без открытки</button>
-          <button type="button" class="sw" data-card="on" aria-pressed="false">Открытка с текстом <small>100 ₽</small></button>
+          <button type="button" class="sw" data-card="on" aria-pressed="false">Открытка с текстом <small id="cardPrice"></small></button>
         </div>
         <div class="card-field" id="cardField" hidden>
           <label class="hint" for="cardText">Текст напишем от руки, до 200 знаков</label>
@@ -191,7 +191,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
         <h2>Состав заказа</h2>
         <div class="receipt">
           <ul id="lines"></ul>
-          <div class="total"><span>Итого</span><b id="total">0 ₽</b></div>
+          <div class="total"><span>Итого</span><b id="total"></b></div>
           <div class="row">
             <button class="btn primary" id="copy" type="button">Скопировать состав</button>
             <span id="copied" hidden>Скопировано</span>
@@ -204,7 +204,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </div>
 
 <div class="mbar" aria-label="Итог заказа">
-  <div class="sum"><b id="mbarTotal">0 ₽</b><span id="mbarMeta">Букет пустой</span></div>
+  <div class="sum"><b id="mbarTotal"></b><span id="mbarMeta">Букет пустой</span></div>
   <div class="row">
     <button class="btn" type="button" data-jump=".stage-col">Макет</button>
     <button class="btn primary" type="button" data-jump="#order">Состав</button>
@@ -212,70 +212,21 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </div>
 <div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button type="button" id="undo">Отменить</button></div>
 
+<script src="js/order.js"></script>
+<script src="js/library.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/catalog.js"></script>
 <script>
 (() => {
-  const KINDS = {
-    rose_red:    {name:'Роза красная',      type:'rose',     price:220, pal:{base:'#B3122E',light:'#D23047',dark:'#6C0A1B'}},
-    rose_cream:  {name:'Роза кремовая',     type:'rose',     price:200, pal:{base:'#F1E2C6',light:'#FBF3E3',dark:'#BFA77C'}},
-    rose_powder: {name:'Роза пудровая',     type:'rose',     price:200, pal:{base:'#E4A3AE',light:'#F1C4CB',dark:'#B26A78'}},
-    peony_pink:  {name:'Пион розовый',      type:'peony',    price:450, pal:{base:'#E57CA1',light:'#F2A8C2',dark:'#B04B74'}, scale:1.15},
-    peony_white: {name:'Пион белый',        type:'peony',    price:450, pal:{base:'#F2EAEC',light:'#FFFFFF',dark:'#C7B8BE'}, scale:1.15},
-    tulip_yellow:{name:'Тюльпан жёлтый',    type:'tulip',    price:120, pal:{base:'#F0BE2C',light:'#F8D96A',dark:'#B9880B'}},
-    tulip_lilac: {name:'Тюльпан сиреневый', type:'tulip',    price:130, pal:{base:'#A57AC8',light:'#C3A1DE',dark:'#6F4B92'}},
-    sunflower:   {name:'Подсолнух',         type:'sunflower',price:250, scale:1.1},
-    daisy:       {name:'Ромашка',           type:'daisy',    price:90,  scale:.85, tier:1},
-    lavender:    {name:'Лаванда',           type:'lavender', price:70,  tier:2, filler:true},
-    eucalyptus:  {name:'Эвкалипт',          type:'eucalyptus',price:150,scale:1.1, tier:2, filler:true},
-    gypsophila:  {name:'Гипсофила',         type:'gypsophila',price:110,tier:2, filler:true},
-  };
-  const WRAPS = {
-    kraft:  {name:'Крафт',          price:250, front:'#C8A276', side:'#B08856', back:'#A07A4B'},
-    white:  {name:'Белый матовый',  price:300, front:'#F5F3EF', side:'#E1DCD3', back:'#D3CDC2'},
-    powder: {name:'Пудровый фетр',  price:300, front:'#EBC9C7', side:'#D9ACA9', back:'#C99896'},
-    graphite:{name:'Графит',        price:350, front:'#43484E', side:'#33373C', back:'#282B2F'},
-    none:   {name:'Без упаковки',   price:0},
-  };
-  const RIBBONS = {
-    satin: {name:'Атлас белый', color:'#F7F4EE', dark:'#D8D1C4'},
-    wine:  {name:'Бордо',       color:'#7A1F33', dark:'#561221'},
-    sage:  {name:'Шалфей',      color:'#8DA58F', dark:'#667F69'},
-    jute:  {name:'Джут',        color:'#B99868', dark:'#8E7145'},
-  };
-  const GIFTS = {
-    bear_small:{name:'Мишка, 25 см',           group:'toy',   price:990,  draw:'bear',  pal:{base:'#A8724A',light:'#DDB98F',dark:'#4A2F1B'}},
-    bear_big:  {name:'Мишка, 40 см',           group:'toy',   price:1890, draw:'bear',  pal:{base:'#C9A27A',light:'#EED8BC',dark:'#5A3D25'}, scale:1.3},
-    bunny:     {name:'Зайка, 30 см',           group:'toy',   price:1190, draw:'bunny', pal:{base:'#E8E1DC',light:'#F8F4F1',dark:'#6E6560'}},
-    cat:       {name:'Котик, 25 см',           group:'toy',   price:1090, draw:'cat',   pal:{base:'#9D9B98',light:'#DAD8D4',dark:'#3E3C3A'}},
-    choco_box: {name:'Конфеты в коробке-сердце',group:'sweet', price:890,  draw:'heartBox'},
-    macarons:  {name:'Макарон, 6 шт',          group:'sweet', price:690,  draw:'macarons'},
-    berries:   {name:'Клубника в шоколаде, 9 шт',group:'sweet',price:1290, draw:'berries'},
-    choco_bar: {name:'Шоколад ручной работы',  group:'sweet', price:450,  draw:'bar'},
-  };
-  const GIFT_MAX = 3;
-  // ground points next to the bouquet: front-left, front-right, back-left, back-right
-  const GIFT_SLOTS = {
-    side:[{x:74,y:450},{x:328,y:458},{x:46,y:376},{x:356,y:384}],
-    top: [{x:66,y:398},{x:334,y:398},{x:54,y:104},{x:346,y:104}],
-  };
-  const PRESETS = [
-    {name:'Нежный',    desc:'Пудровые розы, белые пионы, гипсофила', wrap:'white', ribbon:'sage', items:{rose_powder:5, peony_white:2, gypsophila:3, eucalyptus:3}},
-    {name:'Солнечный', desc:'Подсолнухи, ромашки, лаванда', wrap:'kraft', ribbon:'jute', items:{sunflower:3, daisy:6, lavender:4}},
-    {name:'Классика',  desc:'11 красных роз с эвкалиптом', wrap:'graphite', ribbon:'wine', items:{rose_red:11, eucalyptus:4}},
-    {name:'Весенний',  desc:'Жёлтые и сиреневые тюльпаны', wrap:'powder', ribbon:'satin', items:{tulip_yellow:4, tulip_lilac:3, gypsophila:2}},
-    {name:'Мишка и пионы', desc:'5 пионов, эвкалипт и мишка 25 см', wrap:'powder', ribbon:'satin', items:{peony_pink:3, peony_white:2, eucalyptus:3}, gifts:{bear_small:1}},
-    {name:'Сладкое утро', desc:'9 тюльпанов и коробка макарон', wrap:'white', ribbon:'sage', items:{tulip_yellow:5, tulip_lilac:4, gypsophila:2}, gifts:{macarons:1}},
-    {name:'Для мамы',  desc:'9 кремовых и пудровых роз, конфеты', wrap:'kraft', ribbon:'wine', items:{rose_cream:7, rose_powder:2, eucalyptus:3}, gifts:{choco_box:1}},
-    {name:'Детский праздник', desc:'Ромашки, тюльпаны, зайка и шоколад', wrap:'kraft', ribbon:'jute', items:{daisy:7, tulip_yellow:2, lavender:3}, gifts:{bunny:1, choco_bar:1}},
-    {name:'Признание', desc:'15 красных роз, большой мишка, клубника', wrap:'graphite', ribbon:'wine', items:{rose_red:15, gypsophila:3}, gifts:{bear_big:1, berries:1}},
-  ];
+  const {kinds: KINDS, wraps: WRAPS, ribbons: RIBBONS, gifts: GIFTS, presets: PRESETS} = applyShop(LIBRARY, SHOP);
   const BIND = {x:200, y:400};
   const BOUNDS = {x0:30, x1:370, y0:40, y1:330};
-  const STORE_KEY = 'bouquet-workshop-v1';
+  const STORE_KEY = `bouquet-workshop-v2-${SHOP.id}`;
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
   const SQUASH = .62;            // dome height / width in the side view
   const TOP_H = 440, TOP_CY = 220; // top-view canvas
 
-  const rub = n => n.toLocaleString('ru-RU') + ' ₽';
+  const rub = n => formatMoney(n, SHOP.currency);
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const rng = seed => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 
@@ -374,8 +325,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 
   /* ---------- state ---------- */
   const MAX_STEMS = 51;
-  const CARD = {price:100, maxLength:200};
-  let state = {stems:[], gifts:{}, card:{on:false, text:''}, wrap:'kraft', ribbon:'sage', seed:1, nextId:1, view:'side'};
+  const CARD = {price: SHOP.cardPrice, maxLength:200};
+  let state = {stems:[], gifts:{}, card:{on:false, text:''}, wrap: Object.keys(WRAPS)[0], ribbon: Object.keys(RIBBONS)[0], seed:1, nextId:1, view:'side'};
   let selected = null;
 
   function load() {
@@ -758,7 +709,13 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
     } catch (e) { showFallback(); }
   });
 
-  if (load()) render(); else applyPreset(PRESETS[0]);
+  /* header comes from the shop config; textContent, not markup */
+  document.title = SHOP.name;
+  document.querySelector('header h1').textContent = SHOP.name;
+  document.querySelector('header .lede').textContent = SHOP.tagline;
+  document.getElementById('cardPrice').textContent = rub(CARD.price);
+
+  if (load()) render(); else if (PRESETS.length) applyPreset(PRESETS[0]); else render();
 })();
 </script>
 
