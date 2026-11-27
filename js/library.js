@@ -1,18 +1,20 @@
-/* Shared library: how each item looks. Shops choose from it and set prices in js/shop.js. Classic script, see js/order.js. */
+/* Shared library: how each item looks. Shops choose from it and set prices in js/shop.js. Classic script, see js/order.js.
+   photo: transparent side-view PNG; cx/cy/w = head centre and head width as a share of the image,
+   size = head width in scene units. Items without a photo fall back to the drawn SVG head. */
 
 const LIBRARY = {
   flowers: {
-    rose_red:    {name:'Роза красная',      type:'rose',     pal:{base:'#B3122E',light:'#D23047',dark:'#6C0A1B'}},
+    rose_red:    {name:'Роза красная',      type:'rose',     pal:{base:'#B3122E',light:'#D23047',dark:'#6C0A1B'}, photo:{src:'assets/flowers/rose_red.png', cx:.53, cy:.34, w:.56, size:72}},
     rose_cream:  {name:'Роза кремовая',     type:'rose',     pal:{base:'#F1E2C6',light:'#FBF3E3',dark:'#BFA77C'}},
-    rose_powder: {name:'Роза пудровая',     type:'rose',     pal:{base:'#E4A3AE',light:'#F1C4CB',dark:'#B26A78'}},
-    peony_pink:  {name:'Пион розовый',      type:'peony',    pal:{base:'#E57CA1',light:'#F2A8C2',dark:'#B04B74'}, scale:1.15},
+    rose_powder: {name:'Роза пудровая',     type:'rose',     pal:{base:'#E4A3AE',light:'#F1C4CB',dark:'#B26A78'}, photo:{src:'assets/flowers/rose_powder.png', cx:.51, cy:.29, w:.58, size:72}},
+    peony_pink:  {name:'Пион розовый',      type:'peony',    pal:{base:'#E57CA1',light:'#F2A8C2',dark:'#B04B74'}, scale:1.15, photo:{src:'assets/flowers/peony_pink.png', cx:.50, cy:.34, w:.59, size:80}},
     peony_white: {name:'Пион белый',        type:'peony',    pal:{base:'#F2EAEC',light:'#FFFFFF',dark:'#C7B8BE'}, scale:1.15},
-    tulip_yellow:{name:'Тюльпан жёлтый',    type:'tulip',    pal:{base:'#F0BE2C',light:'#F8D96A',dark:'#B9880B'}},
+    tulip_yellow:{name:'Тюльпан жёлтый',    type:'tulip',    pal:{base:'#F0BE2C',light:'#F8D96A',dark:'#B9880B'}, photo:{src:'assets/flowers/tulip_yellow.png', cx:.49, cy:.27, w:.29, size:38}},
     tulip_lilac: {name:'Тюльпан сиреневый', type:'tulip',    pal:{base:'#A57AC8',light:'#C3A1DE',dark:'#6F4B92'}},
     sunflower:   {name:'Подсолнух',         type:'sunflower', scale:1.1},
     daisy:       {name:'Ромашка',           type:'daisy',     scale:.85, tier:1},
     lavender:    {name:'Лаванда',           type:'lavender',  tier:2, filler:true},
-    eucalyptus:  {name:'Эвкалипт',          type:'eucalyptus',scale:1.1, tier:2, filler:true},
+    eucalyptus:  {name:'Эвкалипт',          type:'eucalyptus',scale:1.1, tier:2, filler:true, photo:{src:'assets/flowers/eucalyptus.png', cx:.50, cy:.40, w:.40, size:56}},
     gypsophila:  {name:'Гипсофила',         type:'gypsophila',tier:2, filler:true},
   },
   wraps: {

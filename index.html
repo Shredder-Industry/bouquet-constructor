@@ -82,7 +82,8 @@ a.btn.primary{color:var(--accent-ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px 10px;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center}
 .item.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-.item svg{grid-row:1 / 3;width:44px;height:52px}
+.item svg,.item img{grid-row:1 / 3;width:44px;height:52px}
+.item img{object-fit:contain}
 .item .nm{font-weight:600;font-size:14px;line-height:1.25}
 .item .pr{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
 .step{grid-column:1 / 3;display:flex;align-items:center;justify-content:space-between;margin-top:6px;background:var(--bg);border-radius:9px;padding:2px}
@@ -457,7 +458,8 @@ a.btn.primary{color:var(--accent-ink)}
   }
 
   function stemPath(s) {
-    const hy = s.y + (ATTACH[KINDS[s.kind].type] || 0) * (KINDS[s.kind].scale || 1);
+    const k = KINDS[s.kind];
+    const hy = s.y + (usesPhoto(s.kind) ? k.photo.size * .3 : (ATTACH[k.type] || 0) * (k.scale || 1));
     const bx = BIND.x + (s.x - BIND.x) * .05;
     const cx = s.x * .55 + bx * .45, cy = (hy + BIND.y) / 2 + 10;
     const ex = BIND.x - (s.x - BIND.x) * .2;
@@ -473,8 +475,23 @@ a.btn.primary{color:var(--accent-ink)}
     ? {x, y: 205 + (clamp(y, 30, TOP_H - 30) - TOP_CY) * SQUASH - (s.lift || 0)}
     : {x, y};
 
+  /* photo heads (side view only): bigger in the centre, smaller and leaning outwards at the edge */
+  const PHOTO_EDGE_SHRINK = .2, PHOTO_LEAN = .12, PHOTO_JITTER = .2, PHOTO_HALF_SPAN = 150;
+  const usesPhoto = kind => !isTop() && Boolean(KINDS[kind].photo);
+  function photoHead(s, k) {
+    const ph = k.photo, edge = Math.min(1, Math.abs(s.x - BIND.x) / PHOTO_HALF_SPAN);
+    const head = ph.size * (1 - edge * PHOTO_EDGE_SHRINK), w = head / ph.w;
+    const rot = (s.x - BIND.x) * PHOTO_LEAN + s.rot * PHOTO_JITTER;
+    return `<g transform="rotate(${rot.toFixed(1)})"><image href="${ph.src}" x="${(-ph.cx * w).toFixed(1)}" y="${(-ph.cy * w).toFixed(1)}"`
+      + ` width="${w.toFixed(1)}" height="${w.toFixed(1)}" filter="url(#photoShadow)" pointer-events="none"/></g>`;
+  }
+
   function headSvg(s) {
     const k = KINDS[s.kind], sc = k.scale || 1, p = toView(s), top = isTop();
+    if (usesPhoto(s.kind)) {
+      const ringEl = s.id === selected ? `<circle r="${(k.photo.size * .55).toFixed(0)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>` : '';
+      return `<g class="head" data-id="${s.id}" transform="translate(${p.x} ${p.y.toFixed(1)})"><circle r="30" fill="transparent"/>${photoHead(s, k)}${ringEl}</g>`;
+    }
     const rot = !top && DIRECTIONAL.has(k.type) ? (s.x - BIND.x) * .16 + s.rot * .15 : s.rot;
     const art = top && DRAW_TOP[k.type] ? DRAW_TOP[k.type](k.pal || {}) : drawHead(s.kind);
     const ringEl = s.id === selected ? `<circle r="34" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>` : '';
@@ -520,11 +537,13 @@ a.btn.primary{color:var(--accent-ink)}
   const emptyNote = y => state.stems.length ? '' :
     `<text x="200" y="${y}" text-anchor="middle" fill="var(--muted)" font-family="Manrope, sans-serif" font-size="15">Добавьте первый цветок из каталога</text>`;
 
+  const PHOTO_DEFS = '<defs><filter id="photoShadow" x="-20%" y="-20%" width="140%" height="140%">'
+    + '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1C2A21" flood-opacity=".28"/></filter></defs>';
   function sideScene() {
     const w = WRAPS[state.wrap], rb = RIBBONS[state.ribbon], e = extents();
     const hasWrap = state.wrap !== 'none';
     const heads = [...state.stems].sort((a, b) => fillerFirst(a, b) || a.y - b.y);
-    return (hasWrap ? wrapBack(w, e) : '')
+    return PHOTO_DEFS + (hasWrap ? wrapBack(w, e) : '')
       + state.stems.map(stemPath).join('')
       + heads.map(s => headSvg(s)).join('')
       + (hasWrap ? `<g pointer-events="none">${wrapFront(w, e)}</g>` : '')
@@ -582,7 +601,9 @@ a.btn.primary{color:var(--accent-ink)}
 
   /* ---------- panel ---------- */
   const flowerCount = () => state.stems.filter(s => !KINDS[s.kind].filler).length;
-  const preview = kind => `<svg viewBox="-34 -46 68 92" aria-hidden="true"><path d="M0 ${ATTACH[KINDS[kind].type] || 0}V46" stroke="#5C8A4C" stroke-width="2.3"/>${drawHead(kind)}</svg>`;
+  const preview = kind => KINDS[kind].photo
+    ? `<img src="${KINDS[kind].photo.src}" alt="" loading="lazy" width="96" height="96">`
+    : `<svg viewBox="-34 -46 68 92" aria-hidden="true"><path d="M0 ${ATTACH[KINDS[kind].type] || 0}V46" stroke="#5C8A4C" stroke-width="2.3"/>${drawHead(kind)}</svg>`;
 
   const giftPreview = key => `<svg viewBox="-36 -86 72 90" aria-hidden="true">${drawGift(key)}</svg>`;
 
