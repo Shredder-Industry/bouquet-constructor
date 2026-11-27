@@ -222,6 +222,7 @@ a.btn.primary{color:var(--accent-ink)}
 <script src="js/shop.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/share.js"></script>
+<script src="js/wrap.js"></script>
 <script>
 (() => {
   const {kinds: KINDS, wraps: WRAPS, ribbons: RIBBONS, gifts: GIFTS, presets: PRESETS} = applyShop(LIBRARY, SHOP);
@@ -499,19 +500,6 @@ a.btn.primary{color:var(--accent-ink)}
       + `<g transform="rotate(${rot.toFixed(1)}) scale(${sc})">${art}</g>${ringEl}</g>`;
   }
 
-  function wrapBack(w, e) {
-    const L = e.minX - 34, R = e.maxX + 34, top = (e.minY + e.maxY) / 2 - 34, sideY = e.maxY + 4;
-    const peaks = 6, step = (R - L) / peaks;
-    const edge = Array.from({length: peaks + 1}, (_, i) => `L${(L + i * step).toFixed(1)} ${(i % 2 ? top + 28 : top - (i === 0 || i === peaks ? -20 : 4)).toFixed(1)}`).join('');
-    return `<path d="M${BIND.x - 18} ${BIND.y + 10}L${L} ${sideY}${edge}L${R} ${sideY}L${BIND.x + 18} ${BIND.y + 10}Z" fill="${w.back}"/>`;
-  }
-
-  function wrapFront(w, e) {
-    const top = Math.min(e.maxY + 10, 372), L = e.minX - 18, R = e.maxX + 18, mid = BIND.x + (R - L) * .06;
-    return `<path d="M${L} ${top}L${mid.toFixed(1)} ${top + 16}L${BIND.x + 4} 458L${BIND.x - 22} 458Z" fill="${w.front}"/>`
-      + `<path d="M${mid.toFixed(1)} ${top + 16}L${R} ${top - 6}L${BIND.x + 22} 458L${BIND.x + 4} 458Z" fill="${w.side}"/>`;
-  }
-
   function bow(rb, y) {
     const x = BIND.x;
     return `<g transform="translate(${x} ${y})">`
@@ -543,10 +531,10 @@ a.btn.primary{color:var(--accent-ink)}
     const w = WRAPS[state.wrap], rb = RIBBONS[state.ribbon], e = extents();
     const hasWrap = state.wrap !== 'none';
     const heads = [...state.stems].sort((a, b) => fillerFirst(a, b) || a.y - b.y);
-    return PHOTO_DEFS + (hasWrap ? wrapBack(w, e) : '')
+    return PHOTO_DEFS + `<defs>${wrapDefs(w)}</defs>` + (hasWrap ? wrapBackSvg(w, e, BIND) : '')
       + state.stems.map(stemPath).join('')
       + heads.map(s => headSvg(s)).join('')
-      + (hasWrap ? `<g pointer-events="none">${wrapFront(w, e)}</g>` : '')
+      + (hasWrap ? `<g pointer-events="none">${wrapFrontSvg(w, e, BIND)}</g>` : '')
       + `<g pointer-events="none">${bow(rb, hasWrap ? 438 : BIND.y)}</g>` + giftsScene('side') + emptyNote(210);
   }
 
@@ -555,7 +543,7 @@ a.btn.primary{color:var(--accent-ink)}
     const dist = s => { const p = toView(s); return Math.hypot(p.x - 200, p.y - TOP_CY); };
     const reach = state.stems.length ? Math.max(...state.stems.map(dist)) : 60;
     const R = clamp(reach + 44, 96, 192);
-    const paper = state.wrap === 'none' ? '' : `<g pointer-events="none" transform="translate(200 ${TOP_CY})">`
+    const paper = state.wrap === 'none' ? '' : `<defs>${wrapDefs(w)}</defs><g pointer-events="none" filter="url(#wrapGrain)" transform="translate(200 ${TOP_CY})">`
       + ring(10, (a, i) => `<ellipse cy="${(-R * .6).toFixed(1)}" rx="${(R * .36).toFixed(1)}" ry="${(R * .44).toFixed(1)}" transform="rotate(${a + 9})" fill="${i % 2 ? w.side : w.front}" stroke="${w.back}" stroke-width="1"/>`)
       + `<circle r="${(R * .64).toFixed(1)}" fill="${w.back}"/></g>`;
     const leaves = `<circle cx="200" cy="${TOP_CY}" r="${(R * .58).toFixed(1)}" fill="#4F7A45" opacity=".55" pointer-events="none"/>`;

@@ -21,11 +21,12 @@ const LIBRARY = {
     eucalyptus:  {name:'Эвкалипт',          type:'eucalyptus',scale:1.1, tier:2, filler:true, photo:{src:'assets/flowers/eucalyptus.png', cx:.50, cy:.40, w:.40, size:56}},
     gypsophila:  {name:'Гипсофила',         type:'gypsophila',tier:2, filler:true},
   },
+  /* texture: kraft | paper | felt, sets the paper grain in js/wrap.js */
   wraps: {
-    kraft:   {name:'Крафт',         front:'#C8A276', side:'#B08856', back:'#A07A4B'},
-    white:   {name:'Белый матовый', front:'#F5F3EF', side:'#E1DCD3', back:'#D3CDC2'},
-    powder:  {name:'Пудровый фетр', front:'#EBC9C7', side:'#D9ACA9', back:'#C99896'},
-    graphite:{name:'Графит',        front:'#43484E', side:'#33373C', back:'#282B2F'},
+    kraft:   {name:'Крафт',         front:'#C8A276', side:'#B08856', back:'#A07A4B', texture:'kraft'},
+    white:   {name:'Белый матовый', front:'#F5F3EF', side:'#E1DCD3', back:'#D3CDC2', texture:'paper'},
+    powder:  {name:'Пудровый фетр', front:'#EBC9C7', side:'#D9ACA9', back:'#C99896', texture:'felt'},
+    graphite:{name:'Графит',        front:'#43484E', side:'#33373C', back:'#282B2F', texture:'paper'},
     none:    {name:'Без упаковки'},
   },
   ribbons: {
