@@ -65,6 +65,9 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn.primary:hover{filter:brightness(1.06)}
+a.btn{display:inline-flex;align-items:center;text-decoration:none;color:inherit}
+a.btn.primary{color:var(--accent-ink)}
+.btn[aria-disabled="true"]{opacity:.5;pointer-events:none}
 
 .panel{display:flex;flex-direction:column;gap:22px}
 .section{display:flex;flex-direction:column;gap:10px}
@@ -193,7 +196,8 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
           <ul id="lines"></ul>
           <div class="total"><span>Итого</span><b id="total"></b></div>
           <div class="row">
-            <button class="btn primary" id="copy" type="button">Скопировать состав</button>
+            <a class="btn primary" id="wa" target="_blank" rel="noopener">Заказать в WhatsApp</a>
+            <button class="btn" id="copy" type="button">Скопировать состав</button>
             <span id="copied" hidden>Скопировано</span>
           </div>
           <textarea id="copyFallback" readonly hidden aria-label="Состав букета для копирования"></textarea>
@@ -207,7 +211,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   <div class="sum"><b id="mbarTotal"></b><span id="mbarMeta">Букет пустой</span></div>
   <div class="row">
     <button class="btn" type="button" data-jump=".stage-col">Макет</button>
-    <button class="btn primary" type="button" data-jump="#order">Состав</button>
+    <a class="btn primary" id="waBar" target="_blank" rel="noopener">Заказать в WhatsApp</a>
   </div>
 </div>
 <div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button type="button" id="undo">Отменить</button></div>
@@ -605,10 +609,28 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
       ? lines.map(l => `<li><span>${l.label}${noteHtml(l)}</span><span>${l.sum ? rub(l.sum) : '—'}</span></li>`).join('')
       : `<li class="empty">Букет пока пустой</li>`;
     document.getElementById('total').textContent = rub(total);
+    renderOrderLinks(lines);
     document.getElementById('mbarTotal').textContent = rub(total);
     const gifts = Object.values(state.gifts).reduce((a, n) => a + n, 0);
     document.getElementById('mbarMeta').textContent = state.stems.length || gifts
       ? `Стеблей: ${state.stems.length}${gifts ? ` · подарков: ${gifts}` : ''}` : 'Букет пустой';
+  }
+
+  const shopPhone = normalizePhone(SHOP.whatsapp);
+  const orderText = (lines, opts) => orderMessage(lines, {currency: SHOP.currency, ...opts});
+  /* null while the order cannot be sent: empty bouquet or no shop number */
+  function orderLink(lines) {
+    if (!lines.length || !shopPhone) return null;
+    return whatsappUrl(shopPhone, orderText(lines, {heading: ORDER_GREETING}));
+  }
+  /* plain links, not window.open: the Instagram in-app browser blocks pop-ups */
+  function renderOrderLinks(lines) {
+    const href = orderLink(lines);
+    const label = !lines.length ? 'Добавьте цветы' : !shopPhone ? 'Номер магазина не настроен' : 'Заказать в WhatsApp';
+    for (const a of [document.getElementById('wa'), document.getElementById('waBar')]) {
+      if (href) { a.href = href; a.removeAttribute('aria-disabled'); } else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
+      a.textContent = label;
+    }
   }
 
   function renderCard() {
@@ -698,10 +720,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
   document.getElementById('clear').addEventListener('click', () => replaceWithUndo({stems: [], gifts: {}}, 'Букет очищен'));
 
   document.getElementById('copy').addEventListener('click', () => {
-    const lines = orderLines();
-    const text = lines.length
-      ? ['Заказ:', ...lines.map(l => `• ${l.label}${l.sum ? ' — ' + rub(l.sum) : ''}${l.note ? `\n  Текст: «${l.note}»` : ''}`), `Итого: ${rub(orderTotal(lines))}`].join('\n')
-      : 'Букет пока пустой';
+    const text = orderText(orderLines());
     const ok = document.getElementById('copied'), fb = document.getElementById('copyFallback');
     const showFallback = () => { fb.value = text; fb.hidden = false; fb.focus(); fb.select(); };
     try {
