@@ -2,10 +2,10 @@
    Prices below are placeholders until the pilot shop sends its price list. Classic script, see js/order.js. */
 
 const SHOP = {
-  id: 'demo', // part of the localStorage key
-  name: 'Букетная мастерская',
+  id: 'sana-flowers', // part of the localStorage key
+  name: 'Sana Flowers',
   tagline: 'Соберите букет — мы привезём его таким же',
-  whatsapp: '', // any format: +7 701 123-45-67, 8 701 1234567, 77011234567
+  whatsapp: '87067021665', // any format: +7 701 123-45-67, 8 701 1234567, 77011234567
   currency: '₸',
   flowers: {
     rose_red: 1100, rose_cream: 1000, rose_powder: 1000,
