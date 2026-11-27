@@ -9,7 +9,9 @@ const SHOP = {
   currency: '₸',
   flowers: {
     rose_red: 1100, rose_cream: 1000, rose_powder: 1000,
+    rose_white: 1000, rose_spray: 1300, // placeholder price
     peony_pink: 2250, peony_white: 2250,
+    hydrangea_blue: 2900, chrysanthemum: 900, // placeholder price
     tulip_yellow: 600, tulip_lilac: 650,
     sunflower: 1250, daisy: 450,
     lavender: 350, eucalyptus: 750, gypsophila: 550,
