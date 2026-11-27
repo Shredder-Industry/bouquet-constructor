@@ -220,6 +220,7 @@ a.btn.primary{color:var(--accent-ink)}
 <script src="js/library.js"></script>
 <script src="js/shop.js"></script>
 <script src="js/catalog.js"></script>
+<script src="js/share.js"></script>
 <script>
 (() => {
   const {kinds: KINDS, wraps: WRAPS, ribbons: RIBBONS, gifts: GIFTS, presets: PRESETS} = applyShop(LIBRARY, SHOP);
@@ -333,16 +334,24 @@ a.btn.primary{color:var(--accent-ink)}
   let state = {stems:[], gifts:{}, card:{on:false, text:''}, wrap: Object.keys(WRAPS)[0], ribbon: Object.keys(RIBBONS)[0], seed:1, nextId:1, view:'side'};
   let selected = null;
 
+  /* the one gate for any outside bouquet, from localStorage or from a link anyone could send: returns a clean state patch or null */
+  function sanitize(saved) {
+    if (!saved || !Array.isArray(saved.stems) || !WRAPS[saved.wrap] || !RIBBONS[saved.ribbon]) return null;
+    const gifts = Object.fromEntries(Object.entries(saved.gifts || {})
+      .filter(([k, n]) => GIFTS[k] && Number.isInteger(n) && n > 0).map(([k, n]) => [k, Math.min(n, GIFT_MAX)]));
+    const card = {on: saved.card?.on === true, text: String(saved.card?.text || '').slice(0, CARD.maxLength)};
+    const num = v => (Number.isFinite(v) ? v : 0);
+    const stems = saved.stems.filter(s => s && KINDS[s.kind] && Number.isInteger(s.id)).slice(0, MAX_STEMS)
+      .map(s => ({id: s.id, kind: s.kind, rot: num(s.rot), lift: num(s.lift), manual: s.manual === true,
+        x: clamp(num(s.x), BOUNDS.x0, BOUNDS.x1), y: clamp(num(s.y), BOUNDS.y0, BOUNDS.y1)}));
+    const nextId = Math.max(Number.isInteger(saved.nextId) ? saved.nextId : 1, ...stems.map(s => s.id + 1));
+    return {stems, gifts, card, nextId, wrap: saved.wrap, ribbon: saved.ribbon,
+      seed: Number.isInteger(saved.seed) ? saved.seed : 1, view: saved.view === 'top' ? 'top' : 'side'};
+  }
   function load() {
     try {
-      const saved = JSON.parse(localStorage.getItem(STORE_KEY));
-      if (saved && Array.isArray(saved.stems) && WRAPS[saved.wrap] && RIBBONS[saved.ribbon]) {
-        const gifts = Object.fromEntries(Object.entries(saved.gifts || {})
-          .filter(([k, n]) => GIFTS[k] && Number.isInteger(n) && n > 0).map(([k, n]) => [k, Math.min(n, GIFT_MAX)]));
-        const card = {on: saved.card?.on === true, text: String(saved.card?.text || '').slice(0, CARD.maxLength)};
-        state = {...state, ...saved, gifts, card, stems: saved.stems.filter(s => KINDS[s.kind]).slice(0, MAX_STEMS), view: saved.view === 'top' ? 'top' : 'side'};
-        return true;
-      }
+      const clean = sanitize(JSON.parse(localStorage.getItem(STORE_KEY)));
+      if (clean) { state = {...state, ...clean}; return true; }
     } catch (e) { /* storage unavailable: start from a preset */ }
     return false;
   }
@@ -618,10 +627,13 @@ a.btn.primary{color:var(--accent-ink)}
 
   const shopPhone = normalizePhone(SHOP.whatsapp);
   const orderText = (lines, opts) => orderMessage(lines, {currency: SHOP.currency, ...opts});
+  /* only a published page has an address the florist can open */
+  const bouquetLink = () => /^https?:$/.test(location.protocol) && state.stems.length
+    ? `${location.origin}${location.pathname}#b=${encodeBouquet(state)}` : undefined;
   /* null while the order cannot be sent: empty bouquet or no shop number */
   function orderLink(lines) {
     if (!lines.length || !shopPhone) return null;
-    return whatsappUrl(shopPhone, orderText(lines, {heading: ORDER_GREETING}));
+    return whatsappUrl(shopPhone, orderText(lines, {heading: ORDER_GREETING, link: bouquetLink()}));
   }
   /* plain links, not window.open: the Instagram in-app browser blocks pop-ups */
   function renderOrderLinks(lines) {
@@ -735,6 +747,14 @@ a.btn.primary{color:var(--accent-ink)}
   document.getElementById('cardPrice').textContent = rub(CARD.price);
 
   if (load()) render(); else if (PRESETS.length) applyPreset(PRESETS[0]); else render();
+
+  /* a bouquet link from an order message: show it, keep the visitor's own bouquet one "undo" away */
+  const LINK_PREFIX = '#b=';
+  if (location.hash.startsWith(LINK_PREFIX)) {
+    const clean = sanitize(decodeBouquet(location.hash.slice(LINK_PREFIX.length)));
+    history.replaceState(null, '', location.pathname + location.search);
+    if (clean) replaceWithUndo({...clean, view: state.view}, 'Открыт букет по ссылке');
+  }
 })();
 </script>
 
