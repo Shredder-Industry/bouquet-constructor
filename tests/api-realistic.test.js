@@ -4,8 +4,8 @@ const { createHandler } = require('../api/realistic.js');
 
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(8)]).toString('base64');
 const BODY = { image: PNG, composition: { flowers: [{ kind: 'rose_red', count: 3 }], wrap: null, ribbon: null } };
-const ENV = { GEMINI_API_KEY: 'test-key', GEMINI_IMAGE_MODEL: 'test-model' };
-const IMAGE_REPLY = { candidates: [{ content: { parts: [{ text: 'ok' }, { inlineData: { mimeType: 'image/png', data: 'QUJD' } }] } }] };
+const ENV = { CF_ACCOUNT_ID: 'acc123', CF_API_TOKEN: 'test-token' };
+const IMAGE_REPLY = { success: true, result: { image: 'QUJD' } };
 
 const fakeFetch = (reply, ok = true) => {
   const calls = [];
@@ -24,13 +24,13 @@ test('returns 405 for GET', async () => {
   assert.equal(res.code, 405);
 });
 
-test('returns 500 with generic message when GEMINI_API_KEY is missing', async t => {
+test('returns 500 with generic message when Cloudflare credentials are missing', async t => {
   silence(t);
   const f = fakeFetch(IMAGE_REPLY);
-  const res = await call(createHandler({ fetchImpl: f, env: {} }));
+  const res = await call(createHandler({ fetchImpl: f, env: { CF_ACCOUNT_ID: 'acc123' } }));
   assert.equal(res.code, 500);
   assert.equal(f.calls.length, 0);
-  assert.ok(!JSON.stringify(res.payload).includes('GEMINI'));
+  assert.ok(!JSON.stringify(res.payload).includes('CF_'));
 });
 
 test('returns 400 for invalid body', async () => {
@@ -38,29 +38,32 @@ test('returns 400 for invalid body', async () => {
   assert.equal(res.code, 400);
 });
 
-test('returns image from Gemini inlineData', async () => {
+test('returns image from Cloudflare result.image', async () => {
   const f = fakeFetch(IMAGE_REPLY);
   const res = await call(createHandler({ fetchImpl: f, env: ENV }));
   assert.equal(res.code, 200);
-  assert.deepEqual(res.payload, { image: 'QUJD', mime: 'image/png' });
+  assert.deepEqual(res.payload, { image: 'QUJD', mime: 'image/jpeg' });
   const { url, init } = f.calls[0];
-  assert.ok(url.includes('/models/test-model:generateContent'));
-  assert.ok(!url.includes('test-key'));
-  assert.equal(init.headers['x-goog-api-key'], 'test-key');
-  const parts = JSON.parse(init.body).contents[0].parts;
-  assert.ok(parts.some(p => p.inlineData && p.inlineData.data === PNG && p.inlineData.mimeType === 'image/png'));
-  assert.ok(parts.some(p => typeof p.text === 'string' && p.text.includes('3 × Роза красная')));
+  assert.equal(url, 'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/black-forest-labs/flux-2-dev');
+  assert.equal(init.headers.authorization, 'Bearer test-token');
+  assert.ok(init.body instanceof FormData);
+  assert.ok(init.body.get('prompt').includes('3 × Роза красная'));
+  const img = init.body.get('input_image_0');
+  assert.equal(img.type, 'image/png');
+  assert.equal(Buffer.from(await img.arrayBuffer()).toString('base64'), PNG);
+  assert.equal(init.body.get('width'), '512');
+  assert.equal(init.body.get('height'), '640');
 });
 
-test('returns 502 when Gemini answers without an image', async t => {
+test('returns 502 when Cloudflare answers without an image', async t => {
   silence(t);
-  const reply = { candidates: [{ content: { parts: [{ text: 'cannot' }] } }] };
+  const reply = { success: false, errors: [{ message: 'nope' }] };
   const res = await call(createHandler({ fetchImpl: fakeFetch(reply), env: ENV }));
   assert.equal(res.code, 502);
   assert.equal(res.payload.error, 'Не получилось создать фото, попробуйте ещё раз');
 });
 
-test('returns 502 when Gemini responds non-2xx', async t => {
+test('returns 502 when Cloudflare responds non-2xx', async t => {
   silence(t);
   const res = await call(createHandler({ fetchImpl: fakeFetch({ error: { message: 'x' } }, false), env: ENV }));
   assert.equal(res.code, 502);
