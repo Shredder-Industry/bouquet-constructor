@@ -35,7 +35,7 @@ function initRealisticPhoto({ dialog, triggers, stage, getComposition, onOrder }
     busy = true;
     syncTriggers();
     actions.querySelectorAll('button').forEach(b => { b.disabled = true; });
-    show('<div class="real-wait"><span class="spinner" aria-hidden="true"></span><p>Создаём фото…<small>обычно 10–20 секунд</small></p></div>');
+    show('<div class="real-wait"><span class="spinner" aria-hidden="true"></span><p>Создаём фото…<small>обычно 30–40 секунд</small></p></div>');
     try {
       if (!snapshot) { snapshot = await svgToPngBase64(stage); snapshotComp = getComposition(); }
       const resp = await fetch(REALISTIC_ENDPOINT, {

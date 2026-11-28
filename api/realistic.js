@@ -13,7 +13,7 @@ const FAL_RUN = 'https://fal.run';
 /* fal hosts results here when sync_mode is ignored; anything else is refused (no SSRF via the reply) */
 const FAL_MEDIA_HOST = /^https:\/\/([a-z0-9-]+\.)*fal\.media\//;
 const OUTPUT_SIZE = { width: 1024, height: 1280 }; /* 1.31 MP: inside Seedream's 0.92–4.6 MP range */
-const TIMEOUT_MS = 50_000; /* below maxDuration so the client gets JSON, not a platform 504 */
+const TIMEOUT_MS = 55_000; /* Seedream takes ~35–40 s; stays below maxDuration so the client gets JSON, not a platform 504 */
 const RATE_LIMIT = 10;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const MSG_GENERIC = 'Сервис временно недоступен, попробуйте позже';
