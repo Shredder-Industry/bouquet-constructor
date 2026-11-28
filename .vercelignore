@@ -1,0 +1,10 @@
+.env*
+!.env.example
+.claude
+.superpowers
+assets/flowers/raw
+assets/flowers/gen.log
+tools
+tests
+docs
+--cut
