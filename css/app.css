@@ -302,3 +302,11 @@ body.ordering .shop,body.ordering .builder{display:none}
 .spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}}
+.real-dialog:has(.real-grid.two){width:min(980px,calc(100vw - 24px))}
+.real-grid{display:grid;gap:var(--s-3)}
+.real-grid.two{grid-template-columns:1fr 1fr}
+@media (max-width:640px){.real-grid.two{grid-template-columns:1fr}}
+.real-card{margin:0;display:flex;flex-direction:column;gap:var(--s-2);min-width:0}
+.real-card figcaption{font-size:13px;font-weight:700;color:var(--text2);text-align:center}
+.real-card .real-wait,.real-card .real-error{min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);background:var(--surface2)}
+.real-grid .real-photo{max-height:calc(100dvh - 260px)}

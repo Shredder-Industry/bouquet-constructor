@@ -53,7 +53,8 @@ http.createServer(async (req, res) => {
   if (req.url.startsWith('/api/realistic')) {
     try {
       const body = req.method === 'POST' ? await readJson(req) : null;
-      await handler({ method: req.method, headers: { 'x-forwarded-for': req.socket.remoteAddress, ...req.headers }, body }, wrapRes(res));
+      const query = Object.fromEntries(new URL(req.url, 'http://x').searchParams);
+      await handler({ method: req.method, query, headers: { 'x-forwarded-for': req.socket.remoteAddress, ...req.headers }, body }, wrapRes(res));
     } catch (err) {
       wrapRes(res).status(err.status || 500).json({ error: 'Ошибка сервера' });
     }
