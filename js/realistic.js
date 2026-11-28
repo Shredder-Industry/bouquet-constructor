@@ -20,17 +20,22 @@ function composition(stems, wrapId, ribbonId) {
   return { flowers, wrap: wrapped ? wrapId : null, ribbon: wrapped && ribbonId ? ribbonId : null };
 }
 
+/* Photographic prompt, tuned on Seedream 5.0 (fal.ai). Names are in Russian; the model reads them fine. */
 /** @param {{flowers: {name: string, count: number}[], wrap: string|null, ribbon: string|null}} comp */
 function buildPrompt(comp) {
   const flowers = comp.flowers.map(f => `${f.count} × ${f.name}`).join(', ');
-  const wrap = comp.wrap ? `wrapped in "${comp.wrap}" florist paper` : 'no wrapping, bare stems';
-  const ribbon = comp.ribbon ? `, tied with a "${comp.ribbon}" ribbon` : '';
+  const wrap = comp.wrap ? `Wrapped in "${comp.wrap}" florist paper with soft folds` : 'No wrapping, bare stems tied together';
+  const ribbon = comp.ribbon ? `, tied with a "${comp.ribbon}" satin ribbon` : '';
   return [
-    'Turn this flat illustration of a hand-tied bouquet into a photorealistic studio photo of a real bouquet.',
-    'Strictly keep the exact arrangement and colors of every flower as in the illustration; do not add or remove flower types.',
-    `Flowers (Russian names): ${flowers}.`,
-    `Packaging: ${wrap}${ribbon}.`,
-    'Fresh real flowers with natural petals and leaves, soft daylight, plain light background, no people, no text.',
+    'Turn the reference image into a real professional photograph of the same hand-tied florist bouquet.',
+    'Keep the exact composition: same flower positions, same proportions, same wrapping and ribbon.',
+    `Bouquet (flower names in Russian): ${flowers}. ${wrap}${ribbon}.`,
+    'Real fresh flowers: natural petal texture, delicate translucency on petal edges, subtle color variation,',
+    'tiny natural imperfections, matte leaves. Paper shows realistic creases and soft shadows.',
+    'Photography: full-frame camera, 50mm lens, f/2.8, soft natural window light from the left, gentle shadows,',
+    'warm neutral off-white background, shallow depth of field, true-to-life colors, sharp focus on the flowers,',
+    'florist catalog product shot.',
+    'Not an illustration, not a 3D render, no CGI look, no plastic or waxy petals, no extra flowers, no text, no watermark, no people.',
   ].join(' ');
 }
 

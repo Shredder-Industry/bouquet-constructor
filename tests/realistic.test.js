@@ -28,12 +28,13 @@ test('buildPrompt lists every flower and the wrap', () => {
   const p = buildPrompt(named);
   assert.ok(p.includes('3 × Роза красная'));
   assert.ok(p.includes('Крафт'));
-  assert.ok(p.includes('keep the exact arrangement'));
-  assert.ok(p.includes('photorealistic studio photo'));
+  assert.ok(p.includes('Keep the exact composition'));
+  assert.ok(p.includes('real professional photograph'));
+  assert.ok(p.includes('Not an illustration'));
 });
 
 test('buildPrompt says no wrapping when wrap is null', () => {
-  assert.ok(buildPrompt({ ...named, wrap: null }).includes('no wrapping'));
+  assert.ok(buildPrompt({ ...named, wrap: null }).includes('No wrapping'));
 });
 
 test('validateRequest rejects empty composition', () => {

@@ -1,6 +1,6 @@
 /* Rasterizes the bouquet SVG into a PNG (base64, no data: prefix) for the realistic-photo request. Browser only. */
 
-const SNAPSHOT_WIDTH = 512; /* FLUX.2 input tiles are 512×512; larger costs more neurons */
+const SNAPSHOT_WIDTH = 768; /* reference for Seedream; keeps the PNG well under the 2 MB server limit */
 const SNAPSHOT_BG = '#ffffff';
 
 function blobToDataUrl(blob) {

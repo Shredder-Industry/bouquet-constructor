@@ -4,8 +4,8 @@ const { createHandler } = require('../api/realistic.js');
 
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(8)]).toString('base64');
 const BODY = { image: PNG, composition: { flowers: [{ kind: 'rose_red', count: 3 }], wrap: null, ribbon: null } };
-const ENV = { CF_ACCOUNT_ID: 'acc123', CF_API_TOKEN: 'test-token' };
-const IMAGE_REPLY = { success: true, result: { image: 'QUJD' } };
+const ENV = { FAL_KEY: 'test-key' };
+const IMAGE_REPLY = { images: [{ url: 'data:image/jpeg;base64,QUJD', content_type: 'image/jpeg' }] };
 
 const fakeFetch = (reply, ok = true) => {
   const calls = [];
@@ -24,13 +24,13 @@ test('returns 405 for GET', async () => {
   assert.equal(res.code, 405);
 });
 
-test('returns 500 with generic message when Cloudflare credentials are missing', async t => {
+test('returns 500 with generic message when FAL_KEY is missing', async t => {
   silence(t);
   const f = fakeFetch(IMAGE_REPLY);
-  const res = await call(createHandler({ fetchImpl: f, env: { CF_ACCOUNT_ID: 'acc123' } }));
+  const res = await call(createHandler({ fetchImpl: f, env: {} }));
   assert.equal(res.code, 500);
   assert.equal(f.calls.length, 0);
-  assert.ok(!JSON.stringify(res.payload).includes('CF_'));
+  assert.ok(!JSON.stringify(res.payload).includes('FAL'));
 });
 
 test('returns 400 for invalid body', async () => {
@@ -38,32 +38,54 @@ test('returns 400 for invalid body', async () => {
   assert.equal(res.code, 400);
 });
 
-test('returns image from Cloudflare result.image', async () => {
+test('returns image from fal sync_mode data URI', async () => {
   const f = fakeFetch(IMAGE_REPLY);
   const res = await call(createHandler({ fetchImpl: f, env: ENV }));
   assert.equal(res.code, 200);
   assert.deepEqual(res.payload, { image: 'QUJD', mime: 'image/jpeg' });
   const { url, init } = f.calls[0];
-  assert.equal(url, 'https://api.cloudflare.com/client/v4/accounts/acc123/ai/run/@cf/black-forest-labs/flux-2-dev');
-  assert.equal(init.headers.authorization, 'Bearer test-token');
-  assert.ok(init.body instanceof FormData);
-  assert.ok(init.body.get('prompt').includes('3 × Роза красная'));
-  const img = init.body.get('input_image_0');
-  assert.equal(img.type, 'image/png');
-  assert.equal(Buffer.from(await img.arrayBuffer()).toString('base64'), PNG);
-  assert.equal(init.body.get('width'), '512');
-  assert.equal(init.body.get('height'), '640');
+  assert.equal(url, 'https://fal.run/bytedance/seedream/v5/flash/edit');
+  assert.equal(init.headers.authorization, 'Key test-key');
+  const body = JSON.parse(init.body);
+  assert.ok(body.prompt.includes('3 × Роза красная'));
+  assert.deepEqual(body.image_urls, [`data:image/png;base64,${PNG}`]);
+  assert.deepEqual(body.image_size, { width: 1024, height: 1280 });
+  assert.equal(body.num_images, 1);
+  assert.equal(body.sync_mode, true);
+  assert.equal(body.output_format, 'jpeg');
 });
 
-test('returns 502 when Cloudflare answers without an image', async t => {
+test('downloads the image when fal returns a hosted URL', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    calls.push(url);
+    if (url.startsWith('https://fal.run/')) return { ok: true, status: 200, json: async () => ({ images: [{ url: 'https://v3b.fal.media/files/x.jpg', content_type: 'image/jpeg' }] }) };
+    return { ok: true, status: 200, headers: { get: () => 'image/jpeg' }, arrayBuffer: async () => Buffer.from('ABC') };
+  };
+  const res = await call(createHandler({ fetchImpl, env: ENV }));
+  assert.equal(res.code, 200);
+  assert.deepEqual(res.payload, { image: 'QUJD', mime: 'image/jpeg' });
+  assert.equal(calls[1], 'https://v3b.fal.media/files/x.jpg');
+});
+
+test('does not download images from hosts other than fal media', async t => {
   silence(t);
-  const reply = { success: false, errors: [{ message: 'nope' }] };
+  const reply = { images: [{ url: 'http://169.254.169.254/latest/meta-data' }] };
+  const f = fakeFetch(reply);
+  const res = await call(createHandler({ fetchImpl: f, env: ENV }));
+  assert.equal(res.code, 502);
+  assert.equal(f.calls.length, 1);
+});
+
+test('returns 502 when fal answers without an image', async t => {
+  silence(t);
+  const reply = { images: [] };
   const res = await call(createHandler({ fetchImpl: fakeFetch(reply), env: ENV }));
   assert.equal(res.code, 502);
   assert.equal(res.payload.error, 'Не получилось создать фото, попробуйте ещё раз');
 });
 
-test('returns 502 when Cloudflare responds non-2xx', async t => {
+test('returns 502 when fal responds non-2xx', async t => {
   silence(t);
   const res = await call(createHandler({ fetchImpl: fakeFetch({ error: { message: 'x' } }, false), env: ENV }));
   assert.equal(res.code, 502);
