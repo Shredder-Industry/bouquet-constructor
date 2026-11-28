@@ -1,6 +1,24 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "static", "runtimeExecutable": "python3", "runtimeArgs": ["-m", "http.server", "8000"], "port": 8000 }
+    {
+      "name": "static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--env-file=.env.local",
+        "tools/dev-server.js"
+      ],
+      "port": 3000
+    }
   ]
 }
