@@ -12,6 +12,7 @@
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
   <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
@@ -52,6 +53,7 @@
         <button type="button" data-view="top" aria-pressed="false">Сверху</button>
       </div>
       <div class="stage-tools">
+        <button class="btn sm real-btn" id="realBtn" type="button"><svg class="ic"><use href="#i-spark"/></svg>Показать вживую</button>
         <button class="icon-btn" id="shuffle" type="button" aria-label="Перемешать" title="Перемешать"><svg class="ic"><use href="#i-shuffle"/></svg></button>
         <button class="icon-btn" id="clear" type="button" aria-label="Очистить букет" title="Очистить"><svg class="ic"><use href="#i-trash"/></svg></button>
       </div>
@@ -141,11 +143,22 @@
   </div>
   <div class="order-actions">
     <a class="btn cta" id="wa" target="_blank" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Заказать в WhatsApp</a>
+    <button class="btn" id="realBtnOrder" type="button"><svg class="ic"><use href="#i-spark"/></svg>Показать вживую</button>
     <button class="btn" id="copy" type="button">Скопировать состав</button>
     <button class="btn" id="cloneLink" type="button" hidden>Собрать похожий</button>
   </div>
   <textarea id="copyFallback" readonly hidden aria-label="Состав букета для копирования"></textarea>
 </section>
+
+<dialog class="real-dialog" id="realDialog" aria-labelledby="realTitle">
+  <div class="real-head"><h2 id="realTitle">Букет вживую</h2><button type="button" class="icon-btn" data-act="close" aria-label="Закрыть">✕</button></div>
+  <div class="real-body" aria-live="polite"></div>
+  <div class="real-actions" hidden>
+    <button type="button" class="btn" data-act="again">Ещё вариант</button>
+    <button type="button" class="btn" data-act="retry">Повторить</button>
+    <button type="button" class="btn cta" data-act="order">Заказать</button>
+  </div>
+</dialog>
 
 <div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button type="button" id="undo">Вернуть</button></div>
 
@@ -158,6 +171,8 @@
 <script src="js/layout.js"></script>
 <script src="js/art.js"></script>
 <script src="js/realistic.js"></script>
+<script src="js/snapshot.js"></script>
+<script src="js/realistic-ui.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

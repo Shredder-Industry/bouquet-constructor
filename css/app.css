@@ -282,3 +282,23 @@ body.ordering .shop,body.ordering .builder{display:none}
   .order{padding-top:var(--s-8)}
   .order-actions{flex-direction:row}
 }
+
+/* «Показать вживую» */
+.real-btn{box-shadow:var(--sh-sm);border-color:var(--line)}
+.real-btn:disabled,.order-actions .btn:disabled{opacity:.4;cursor:default}
+.real-dialog{width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:var(--s-4);border:0;border-radius:var(--r-xl);
+  background:var(--surface);color:var(--text);box-shadow:var(--sh-md)}
+.real-dialog::backdrop{background:rgba(20,16,14,.55)}
+.real-head{display:flex;align-items:center;justify-content:space-between;gap:var(--s-3);margin-bottom:var(--s-3)}
+.real-head h2{margin:0;font-size:18px}
+.real-photo{display:block;width:100%;height:auto;max-height:calc(100dvh - 220px);object-fit:contain;border-radius:var(--r-md);background:var(--surface2)}
+.real-note{margin:var(--s-2) 0 0;font-size:12px;color:var(--text2);text-align:center}
+.real-wait{display:flex;flex-direction:column;align-items:center;gap:var(--s-3);padding:var(--s-6) 0;text-align:center}
+.real-wait p{margin:0;font-weight:700}
+.real-wait small{display:block;font-weight:400;color:var(--text2)}
+.real-error{margin:0;padding:var(--s-5) 0;text-align:center;color:var(--err)}
+.real-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:var(--s-2);margin-top:var(--s-3)}
+.real-actions [hidden]{display:none}
+.spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:3s}}

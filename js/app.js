@@ -340,6 +340,16 @@
 
   const flowerCount = () => state.stems.filter(s => !KINDS[s.kind].filler).length;
   const giftCount = () => Object.values(state.gifts).reduce((a, n) => a + n, 0);
+
+  /* AI photo of the assembled bouquet; paper and ribbon only when the bouquet is wrapped */
+  const realPhoto = initRealisticPhoto({
+    dialog: $('realDialog'), triggers: [$('realBtn'), $('realBtnOrder')], stage: $('stage'),
+    getComposition: () => {
+      const wrapped = state.wrap !== 'none';
+      return composition(state.stems, KINDS, wrapped ? WRAPS[state.wrap].name : null, wrapped ? RIBBONS[state.ribbon].name : null);
+    },
+    onOrder: () => openOrder(),
+  });
   const preview = kind => KINDS[kind].photo
     ? `<img src="${KINDS[kind].photo.src}" alt="" loading="lazy" width="96" height="96">`
     : `<svg viewBox="-34 -46 68 92" aria-hidden="true"><path d="M0 ${ATTACH[KINDS[kind].type] || 0}V46" stroke="#5C8A4C" stroke-width="2.3"/>${drawHead(kind)}</svg>`;
@@ -509,6 +519,7 @@
     $('countPill').innerHTML = `${icon('stem')}${all >= MAX_STEMS ? `${all} из ${MAX_STEMS}` : stemsText(all)}`;
     $('emptyNote').hidden = all > 0;
     $('shuffle').disabled = $('clear').disabled = !all && !giftCount();
+    realPhoto.setEnabled(all > 0);
     const sel = selected && state.stems.find(s => s.id === selected);
     $('selBar').hidden = !sel;
     if (sel) $('selName').textContent = KINDS[sel.kind].name;
