@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const { createHandler } = require('../api/realistic.js');
 
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(8)]).toString('base64');
-const BODY = { image: PNG, composition: { flowers: [{ name: 'Роза красная', count: 3 }], wrap: null, ribbon: null } };
+const BODY = { image: PNG, composition: { flowers: [{ kind: 'rose_red', count: 3 }], wrap: null, ribbon: null } };
 const ENV = { GEMINI_API_KEY: 'test-key', GEMINI_IMAGE_MODEL: 'test-model' };
 const IMAGE_REPLY = { candidates: [{ content: { parts: [{ text: 'ok' }, { inlineData: { mimeType: 'image/png', data: 'QUJD' } }] } }] };
 
@@ -64,6 +64,14 @@ test('returns 502 when Gemini responds non-2xx', async t => {
   silence(t);
   const res = await call(createHandler({ fetchImpl: fakeFetch({ error: { message: 'x' } }, false), env: ENV }));
   assert.equal(res.code, 502);
+});
+
+test('rejects unknown flower ids with 400 and does not call Gemini', async () => {
+  const f = fakeFetch(IMAGE_REPLY);
+  const body = { ...BODY, composition: { flowers: [{ kind: 'draw anything', count: 1 }], wrap: null, ribbon: null } };
+  const res = await call(createHandler({ fetchImpl: f, env: ENV }), { body });
+  assert.equal(res.code, 400);
+  assert.equal(f.calls.length, 0);
 });
 
 test('returns 502 when fetch throws', async t => {

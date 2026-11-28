@@ -35,9 +35,10 @@ function wrapRes(res) {
 }
 
 async function serveStatic(req, res) {
-  const urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let urlPath;
+  try { urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch { res.statusCode = 400; res.end('Bad request'); return; }
   const file = path.resolve(ROOT, `.${urlPath.endsWith('/') ? `${urlPath}index.html` : urlPath}`);
-  const blocked = !file.startsWith(ROOT + path.sep) || path.basename(file).startsWith('.env');
+  const blocked = !file.startsWith(ROOT + path.sep) || path.relative(ROOT, file).split(path.sep).some(p => p.startsWith('.'));
   if (blocked) { res.statusCode = 403; res.end('Forbidden'); return; }
   try {
     const data = await fs.readFile(file);
@@ -59,4 +60,4 @@ http.createServer(async (req, res) => {
     return;
   }
   await serveStatic(req, res);
-}).listen(PORT, () => process.stdout.write(`Dev server: http://localhost:${PORT}\n`));
+}).listen(PORT, '127.0.0.1', () => process.stdout.write(`Dev server: http://localhost:${PORT}\n`));

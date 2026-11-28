@@ -2,10 +2,15 @@
    Vercel Function (Node, CommonJS). Key lives only in env GEMINI_API_KEY. */
 
 const { validateRequest, buildPrompt } = require('../js/realistic.js');
+const { LIBRARY } = require('../js/library.js');
+const { SHOP } = require('../js/shop.js');
+const { applyShop } = require('../js/catalog.js');
+
+const CATALOG = applyShop(LIBRARY, SHOP);
 
 const DEFAULT_MODEL = 'gemini-2.5-flash-image';
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const TIMEOUT_MS = 60_000;
+const TIMEOUT_MS = 50_000; /* below maxDuration so the client gets JSON, not a platform 504 */
 const RATE_LIMIT = 10;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const MSG_GENERIC = 'Сервис временно недоступен, попробуйте позже';
@@ -19,12 +24,13 @@ function clientIp(req) {
 
 /* Best-effort in-memory limiter: per warm instance only. */
 function createRateLimiter(now) {
-  let hits = new Map();
+  const hits = new Map(); /* owned by the limiter; expired IPs are pruned */
   return function allow(ip) {
     const t = now();
+    hits.forEach((list, key) => { if (t - list[list.length - 1] >= RATE_WINDOW_MS) hits.delete(key); });
     const recent = (hits.get(ip) || []).filter(ts => t - ts < RATE_WINDOW_MS);
     if (recent.length >= RATE_LIMIT) return false;
-    hits = new Map(hits).set(ip, [...recent, t]);
+    hits.set(ip, [...recent, t]);
     return true;
   };
 }
@@ -66,7 +72,7 @@ function createHandler({ fetchImpl = globalThis.fetch, env = process.env, now = 
       return res.status(500).json({ error: MSG_GENERIC });
     }
     if (!allow(clientIp(req))) return res.status(429).json({ error: MSG_RATE });
-    const checked = validateRequest(req.body);
+    const checked = validateRequest(CATALOG, req.body);
     if (!checked.ok) return res.status(checked.status).json({ error: checked.error });
     try {
       const model = env.GEMINI_IMAGE_MODEL || DEFAULT_MODEL;

@@ -341,13 +341,10 @@
   const flowerCount = () => state.stems.filter(s => !KINDS[s.kind].filler).length;
   const giftCount = () => Object.values(state.gifts).reduce((a, n) => a + n, 0);
 
-  /* AI photo of the assembled bouquet; paper and ribbon only when the bouquet is wrapped */
+  /* AI photo of the assembled bouquet */
   const realPhoto = initRealisticPhoto({
     dialog: $('realDialog'), triggers: [$('realBtn'), $('realBtnOrder')], stage: $('stage'),
-    getComposition: () => {
-      const wrapped = state.wrap !== 'none';
-      return composition(state.stems, KINDS, wrapped ? WRAPS[state.wrap].name : null, wrapped ? RIBBONS[state.ribbon].name : null);
-    },
+    getComposition: () => composition(state.stems, state.wrap, state.ribbon),
     onOrder: () => openOrder(),
   });
   const preview = kind => KINDS[kind].photo
