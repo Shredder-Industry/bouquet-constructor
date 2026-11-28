@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { applyShop } = require('../js/catalog.js');
+const { applyShop, flowerGroup, FLOWER_GROUPS } = require('../js/catalog.js');
 
 const library = {
   flowers: { rose_red: { name: 'Роза красная', type: 'rose' }, daisy: { name: 'Ромашка', type: 'daisy' } },
@@ -48,4 +48,17 @@ test('applyShop does not mutate its inputs', () => {
 test('applyShop does not treat inherited names like toString as stocked items', () => {
   const crafted = { ...shop, presets: [{ name: 'Подделка', wrap: 'kraft', ribbon: 'sage', items: { toString: 3 } }] };
   assert.deepEqual(applyShop(library, crafted).presets, []);
+});
+
+test('flowerGroup sorts flowers into catalog filters by type, greenery first', () => {
+  assert.equal(flowerGroup({ type: 'rose' }), 'roses');
+  assert.equal(flowerGroup({ type: 'peony' }), 'lush');
+  assert.equal(flowerGroup({ type: 'tulip' }), 'tulips');
+  assert.equal(flowerGroup({ type: 'daisy' }), 'field');
+  assert.equal(flowerGroup({ type: 'eucalyptus', filler: true }), 'green');
+  assert.equal(flowerGroup({ type: 'orchid' }), 'other');
+});
+
+test('every filter group has a label', () => {
+  for (const g of FLOWER_GROUPS) assert.ok(g.key && g.label, JSON.stringify(g));
 });

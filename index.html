@@ -15,6 +15,7 @@
   --accent:#A3305C; --accent-ink:#FFFFFF; --accent-soft:#F4DCE5;
   --stage:#DFE7DC; --stage-2:#F5F8F3; --ok:#2C7647; --warn:#A86200;
   --display:"Unbounded","Manrope",system-ui,sans-serif;
+  --r-sm:10px; --r-md:14px; --r-lg:20px;
   --body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -32,7 +33,32 @@ html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px}
+.brand{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:14px 24px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand-id{display:flex;align-items:center;gap:14px;min-width:0}
+.mark{flex:none;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 50% 50%,var(--accent-soft) 0 30%,transparent 31%),conic-gradient(from 0deg,var(--accent) 0 12.5%,transparent 0 25%,var(--accent) 0 37.5%,transparent 0 50%,var(--accent) 0 62.5%,transparent 0 75%,var(--accent) 0 87.5%,transparent 0);border:2px solid var(--accent)}
+.trust{grid-column:1 / -1;list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 22px;color:var(--muted);font-size:13px;font-weight:600}
+.trust li{display:flex;align-items:center;gap:8px}
+.trust b{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-size:11px}
+.btn.ghost{border-color:var(--accent);color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+h3{margin:4px 0 0;font-size:13px;font-weight:600;color:var(--muted)}
+.jump{position:sticky;top:0;z-index:10;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0;margin:-10px 0 -8px;background:var(--bg)}
+.jump::-webkit-scrollbar{display:none}
+.jump button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--muted)}
+.jump button:hover{color:var(--ink);border-color:var(--ink)}
+.section{scroll-margin-top:60px}
+@media (max-width:600px){
+  .brand{grid-template-columns:minmax(0,1fr);gap:12px;padding-bottom:14px}
+  .brand h1{font-size:24px}
+  .mark{width:38px;height:38px}
+  #waContact{justify-self:start;padding:6px 12px;font-size:13px}
+  .trust{flex-direction:column;gap:6px}
+  .stage svg{max-height:52vh}
+  .mbar .btn{white-space:nowrap}
+  .mbar .sum b{font-size:16px}
+  .mbar .row{gap:6px}
+  .mbar .btn{padding-inline:10px}
+}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(22px,3.4vw,32px);letter-spacing:-.01em;margin:0;text-wrap:balance}
 h1 span{color:var(--accent)}
 .lede{color:var(--muted);margin:0;max-width:56ch}
@@ -74,19 +100,36 @@ a.btn.primary{color:var(--accent-ink)}
 .combos{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
 .combo{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 12px}
 .combo:hover{border-color:var(--ink)}
+.cthumbs{display:flex;margin-bottom:6px}
+.ct{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--stage-2),var(--stage));border:2px solid var(--surface);display:grid;place-items:center;overflow:hidden;margin-left:-10px}
+.ct:first-child{margin-left:0}
+.ct img{width:130%;height:130%;object-fit:cover;object-position:50% 30%}
+.ct svg{width:70%;height:auto}
+.filters{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.filters::-webkit-scrollbar{display:none}
+.filters button{flex:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;color:var(--muted)}
+.filters button:hover{color:var(--ink);border-color:var(--ink)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.filters small{font-size:11px;font-weight:700;opacity:.7;font-variant-numeric:tabular-nums}
+.grid-empty{grid-column:1 / -1;margin:0;padding:18px;border:1px dashed var(--line);border-radius:var(--r-md);color:var(--muted);text-align:center}
+.link{border:0;background:none;padding:0;color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .combo .cn{font-weight:700;font-size:14px}
 .combo .cd{color:var(--muted);font-size:13px;line-height:1.35}
 .combo .cp{margin-top:auto;padding-top:6px;font-weight:700;font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 7px}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
-.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px 10px 10px;display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+@media (max-width:480px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.trust{font-size:12px;gap:6px 14px}}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:6px 6px 8px;display:flex;flex-direction:column;gap:2px;transition:border-color .15s}
+.item:hover{border-color:var(--muted)}
+.thumb{aspect-ratio:1;border-radius:calc(var(--r-md) - 4px);background:radial-gradient(ellipse at 50% 40%,var(--stage-2),var(--stage) 75%);display:grid;place-items:center;margin-bottom:6px;overflow:hidden}
+.thumb svg,.thumb img{width:62%;height:auto;max-height:80%}
+.thumb img{width:92%;height:92%;max-height:none;object-fit:contain}
+.item .nm,.item .pr{padding-inline:4px}
 .item.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-.item svg,.item img{grid-row:1 / 3;width:44px;height:52px}
-.item img{object-fit:contain}
 .item .nm{font-weight:600;font-size:14px;line-height:1.25}
 .item .pr{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
-.step{grid-column:1 / 3;display:flex;align-items:center;justify-content:space-between;margin-top:6px;background:var(--bg);border-radius:9px;padding:2px}
+.step{display:flex;align-items:center;justify-content:space-between;margin-top:auto;background:var(--bg);border-radius:9px;padding:2px}
 .step button{width:32px;height:28px;border:0;background:transparent;border-radius:7px;font-size:18px;line-height:1;font-weight:600}
 .step button:hover{background:var(--surface)}
 .step output{font-variant-numeric:tabular-nums;font-weight:700;min-width:2ch;text-align:center}
@@ -135,9 +178,20 @@ a.btn.primary{color:var(--accent-ink)}
 </style>
 
 <div class="wrap">
-  <header>
-    <h1>Sana Flowers</h1>
-    <p class="lede">Добавляйте цветы справа, перетаскивайте бутоны на макете, выбирайте упаковку и ленту. Состав и цена считаются сразу.</p>
+  <header class="brand">
+    <div class="brand-id">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <h1>Sana Flowers</h1>
+        <p class="lede"></p>
+      </div>
+    </div>
+    <a class="btn ghost" id="waContact" target="_blank" rel="noopener">Написать флористу</a>
+    <ul class="trust" aria-label="Как это работает">
+      <li><b>1</b>Соберите букет на макете</li>
+      <li><b>2</b>Отправьте заказ в WhatsApp</li>
+      <li><b>3</b>Флорист соберёт по вашему макету</li>
+    </ul>
   </header>
 
   <main>
@@ -159,27 +213,35 @@ a.btn.primary{color:var(--accent-ink)}
     </section>
 
     <section class="panel" aria-label="Настройка букета">
-      <div class="section">
+      <nav class="jump" aria-label="Разделы">
+        <button type="button" data-jump="#s-presets">Готовые</button>
+        <button type="button" data-jump="#s-flowers">Цветы</button>
+        <button type="button" data-jump="#s-gifts">Подарки</button>
+        <button type="button" data-jump="#s-wrap">Оформление</button>
+        <button type="button" data-jump="#s-card">Открытка</button>
+        <button type="button" data-jump="#order">Заказ</button>
+      </nav>
+      <div class="section" id="s-presets">
         <h2>Готовые композиции</h2>
         <div class="combos" id="presets"></div>
       </div>
-      <div class="section">
+      <div class="section" id="s-flowers">
         <h2>Цветы и зелень</h2>
-        <div class="grid" id="catalog"></div>
+        <div class="filters" id="flowerFilters" role="group" aria-label="Показать цветы"></div>
+        <div class="grid" id="catalog" aria-live="polite"></div>
       </div>
-      <div class="section">
+      <div class="section" id="s-gifts">
         <h2>Игрушки и сладости</h2>
         <div class="grid" id="gifts"></div>
       </div>
-      <div class="section">
-        <h2>Упаковка</h2>
+      <div class="section" id="s-wrap">
+        <h2>Оформление</h2>
+        <h3>Упаковка</h3>
         <div class="swatches" id="wraps"></div>
-      </div>
-      <div class="section">
-        <h2>Лента</h2>
+        <h3>Лента</h3>
         <div class="swatches" id="ribbons"></div>
       </div>
-      <div class="section">
+      <div class="section" id="s-card">
         <h2>Открытка</h2>
         <div class="swatches" id="cardMode" role="group" aria-label="Открытка">
           <button type="button" class="sw" data-card="off" aria-pressed="true">Без открытки</button>
@@ -223,6 +285,7 @@ a.btn.primary{color:var(--accent-ink)}
 <script src="js/catalog.js"></script>
 <script src="js/share.js"></script>
 <script src="js/wrap.js"></script>
+<script src="js/layout.js"></script>
 <script>
 (() => {
   const {kinds: KINDS, wraps: WRAPS, ribbons: RIBBONS, gifts: GIFTS, presets: PRESETS} = applyShop(LIBRARY, SHOP);
@@ -373,20 +436,29 @@ a.btn.primary{color:var(--accent-ink)}
 
   const newStem = (kind, r) => ({id: state.nextId++, kind, x:200, y:200, rot: Math.round((r() - .5) * 60), manual:false});
 
+  const HEAD_SVG_SIZE = 34;   // drawn heads are about this wide at scale 1
+  const headSize = kind => KINDS[kind].photo ? KINDS[kind].photo.size * PHOTO_HEAD_SCALE : HEAD_SVG_SIZE * (KINDS[kind].scale || 1);
+  const FILLER_RING = .95, FILLER_RING_SPREAD = .1;
+
+  /* flowers fill a dense spiral, biggest in the centre; greenery goes in a ring around the edge */
   function arrange(stems, seed) {
     const r = rng(seed * 9973);
-    const auto = stems.filter(s => !s.manual)
-      .map(s => ({s, key: (KINDS[s.kind].tier || 0) + r() * .9}))
+    const auto = stems.filter(s => !s.manual);
+    const main = auto.filter(s => !KINDS[s.kind].filler)
+      .map(s => ({s, key: (KINDS[s.kind].tier || 0) * 1000 - headSize(s.kind) + r() * 20}))
       .sort((a, b) => a.key - b.key).map(o => o.s);
-    const n = auto.length, offset = r() * Math.PI * 2;
-    const rx = Math.min(150, 30 + 24 * Math.sqrt(n)), ry = rx * SQUASH;
-    const placed = new Map(auto.map((s, i) => {
-      const rad = Math.sqrt((i + .5) / Math.max(n, 1)), th = i * GOLDEN + offset;
-      const x = 200 + rad * Math.cos(th) * rx;
-      const lift = Math.round((1 - rad * rad) * 24);
-      const y = 205 + rad * Math.sin(th) * ry - lift;
-      return [s.id, {x: clamp(Math.round(x), BOUNDS.x0, BOUNDS.x1), y: clamp(Math.round(y), BOUNDS.y0, BOUNDS.y1), lift}];
-    }));
+    const fillers = auto.filter(s => KINDS[s.kind].filler);
+    const sizes = main.map(s => headSize(s.kind));
+    const rx = packRadius(sizes), ry = rx * SQUASH, radii = spiralRadii(sizes), offset = r() * Math.PI * 2;
+    const place = (rad, th) => {
+      const lift = Math.round(Math.max(0, 1 - rad * rad) * 24);
+      return {x: clamp(Math.round(200 + rad * Math.cos(th) * rx), BOUNDS.x0, BOUNDS.x1),
+        y: clamp(Math.round(205 + rad * Math.sin(th) * ry - lift), BOUNDS.y0, BOUNDS.y1), lift};
+    };
+    const placed = new Map([
+      ...main.map((s, i) => [s.id, place(radii[i], i * GOLDEN + offset)]),
+      ...fillers.map((s, i) => [s.id, place(FILLER_RING + r() * FILLER_RING_SPREAD, offset + (i + .5) * Math.PI * 2 / fillers.length)]),
+    ]);
     return stems.map(s => placed.has(s.id) ? {...s, ...placed.get(s.id)} : s);
   }
 
@@ -477,18 +549,39 @@ a.btn.primary{color:var(--accent-ink)}
     : {x, y};
 
   /* photo heads (side view only): bigger in the centre, smaller and leaning outwards at the edge */
+  const PHOTO_HEAD_SCALE = 1.2;   // photo heads drawn larger than their library size
   const PHOTO_EDGE_SHRINK = .2, PHOTO_LEAN = .12, PHOTO_JITTER = .2, PHOTO_HALF_SPAN = 150;
   const usesPhoto = kind => !isTop() && Boolean(KINDS[kind].photo);
   function photoHead(s, k) {
     const ph = k.photo, edge = Math.min(1, Math.abs(s.x - BIND.x) / PHOTO_HALF_SPAN);
-    const head = ph.size * (1 - edge * PHOTO_EDGE_SHRINK), w = head / ph.w;
+    const head = ph.size * PHOTO_HEAD_SCALE * (1 - edge * PHOTO_EDGE_SHRINK), w = head / ph.w;
     const rot = (s.x - BIND.x) * PHOTO_LEAN + s.rot * PHOTO_JITTER;
     return `<g transform="rotate(${rot.toFixed(1)})"><image href="${ph.src}" x="${(-ph.cx * w).toFixed(1)}" y="${(-ph.cy * w).toFixed(1)}"`
       + ` width="${w.toFixed(1)}" height="${w.toFixed(1)}" filter="url(#photoShadow)" pointer-events="none"/></g>`;
   }
 
+  /* top view from side photos: a flower shows its head, cut round; greenery shows the whole sprig pointing outwards */
+  const TOP_HEAD_SCALE = 1.15, TOP_SPRIG_BASE = .75, TOP_SPRIG_SCALE = .6;
+  const TOP_HEAD_ASPECT = .62;   // a side-view head is about this tall for its width; stretched back to round from above
+  function photoTopHead(s, k, p) {
+    const ph = k.photo;
+    if (k.filler) {
+      const w = ph.size / ph.w * TOP_SPRIG_SCALE, outwards = Math.atan2(p.y - TOP_CY, p.x - 200) * 180 / Math.PI + 90;
+      return `<g transform="rotate(${(outwards + s.rot * PHOTO_JITTER).toFixed(1)})"><image href="${ph.src}" x="${(-ph.cx * w).toFixed(1)}"`
+        + ` y="${(-TOP_SPRIG_BASE * w).toFixed(1)}" width="${w.toFixed(1)}" height="${w.toFixed(1)}" pointer-events="none"/></g>`;
+    }
+    const head = ph.size * PHOTO_HEAD_SCALE * TOP_HEAD_SCALE, w = head / ph.w, clip = `topHead${s.id}`;
+    return `<clipPath id="${clip}"><ellipse rx="${(head * .5).toFixed(1)}" ry="${(head * .5 * TOP_HEAD_ASPECT).toFixed(1)}"/></clipPath>`
+      + `<g transform="rotate(${s.rot}) scale(1 ${(1 / TOP_HEAD_ASPECT * .85).toFixed(2)})" filter="url(#photoShadow)"><image href="${ph.src}" x="${(-ph.cx * w).toFixed(1)}" y="${(-ph.cy * w).toFixed(1)}"`
+      + ` width="${w.toFixed(1)}" height="${w.toFixed(1)}" clip-path="url(#${clip})" pointer-events="none"/></g>`;
+  }
+
   function headSvg(s) {
     const k = KINDS[s.kind], sc = k.scale || 1, p = toView(s), top = isTop();
+    if (top && k.photo) {
+      const ringEl = s.id === selected ? `<circle r="${(k.photo.size * TOP_HEAD_SCALE * .58).toFixed(0)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>` : '';
+      return `<g class="head" data-id="${s.id}" transform="translate(${p.x} ${p.y.toFixed(1)})"><circle r="30" fill="transparent"/>${photoTopHead(s, k, p)}${ringEl}</g>`;
+    }
     if (usesPhoto(s.kind)) {
       const ringEl = s.id === selected ? `<circle r="${(k.photo.size * .55).toFixed(0)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="5 4"/>` : '';
       return `<g class="head" data-id="${s.id}" transform="translate(${p.x} ${p.y.toFixed(1)})"><circle r="30" fill="transparent"/>${photoHead(s, k)}${ringEl}</g>`;
@@ -526,14 +619,43 @@ a.btn.primary{color:var(--accent-ink)}
     `<text x="200" y="${y}" text-anchor="middle" fill="var(--muted)" font-family="Manrope, sans-serif" font-size="15">Добавьте первый цветок из каталога</text>`;
 
   const PHOTO_DEFS = '<defs><filter id="photoShadow" x="-20%" y="-20%" width="140%" height="140%">'
-    + '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1C2A21" flood-opacity=".28"/></filter></defs>';
+    + '<feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#1C2A21" flood-opacity=".22"/></filter>'
+    + '<radialGradient id="domeShade" cx=".5" cy=".42" r=".58"><stop offset=".5" stop-color="#0B140D" stop-opacity="0"/>'
+    + '<stop offset="1" stop-color="#0B140D" stop-opacity=".38"/></radialGradient></defs>';
+
+  /* decorative greenery under the flowers: not in the order, it only hides the gaps between heads */
+  const BED_SPRIG = (Object.values(LIBRARY.flowers).find(f => f.filler && f.photo) || {}).photo;
+  const BED_GREEN = '#2F4A2A', BED_SPRIG_SCALE = .55, BED_SPRIG_BASE = .85;
+  function bedSprig(x, y, outwards, scale) {  // scale: share of the full sprig length
+    if (!BED_SPRIG) return '';
+    const w = BED_SPRIG.size / BED_SPRIG.w * BED_SPRIG_SCALE * scale;
+    return `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${outwards.toFixed(1)})"><image href="${BED_SPRIG.src}"`
+      + ` x="${(-BED_SPRIG.cx * w).toFixed(1)}" y="${(-BED_SPRIG_BASE * w).toFixed(1)}" width="${w.toFixed(1)}" height="${w.toFixed(1)}"/></g>`;
+  }
+  /* sprigs around an ellipse (cx, cy, rx, ry), each pointing away from (ox, oy); then a dark green mass under the heads */
+  function greeneryBed(cx, cy, rx, ry, ox, oy, sprigScale = 1) {
+    const deg = Math.PI / 180;
+    const sprigs = bedSprigs(rx, state.seed).map(sp => {
+      const x = cx + Math.cos(sp.angle * deg) * rx * sp.dist, y = cy + Math.sin(sp.angle * deg) * ry * sp.dist;
+      return bedSprig(x, y, Math.atan2(y - oy, x - ox) / deg + 90, sp.scale * sprigScale);
+    }).join('');
+    return `<g pointer-events="none">${sprigs}<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${(rx * .92).toFixed(1)}" ry="${(ry * .92).toFixed(1)}"`
+      + ` fill="${BED_GREEN}" opacity=".9" filter="url(#wrapBlur)"/></g>`;
+  }
+  /* shared dome light: centre bright, rim in shade, drawn over the heads */
+  const domeShade = (cx, cy, rx, ry) => `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}"`
+    + ` fill="url(#domeShade)" pointer-events="none"/>`;
   function sideScene() {
     const w = WRAPS[state.wrap], rb = RIBBONS[state.ribbon], e = extents();
     const hasWrap = state.wrap !== 'none';
     const heads = [...state.stems].sort((a, b) => fillerFirst(a, b) || a.y - b.y);
+    const has = state.stems.length > 0;
+    const cx = (e.minX + e.maxX) / 2, cy = (e.minY + e.maxY) / 2, rx = (e.maxX - e.minX) / 2 + 30, ry = (e.maxY - e.minY) / 2 + 26;
     return PHOTO_DEFS + `<defs>${wrapDefs(w)}</defs>` + (hasWrap ? wrapBackSvg(w, e, BIND) : '')
       + state.stems.map(stemPath).join('')
+      + (has ? greeneryBed(cx, cy, rx, ry, BIND.x, BIND.y) : '')
       + heads.map(s => headSvg(s)).join('')
+      + (has ? domeShade(cx, cy - 6, rx + 8, ry + 10) : '')
       + (hasWrap ? `<g pointer-events="none">${wrapFrontSvg(w, e, BIND)}</g>` : '')
       + `<g pointer-events="none">${bow(rb, hasWrap ? 438 : BIND.y)}</g>` + giftsScene('side') + emptyNote(210);
   }
@@ -543,13 +665,14 @@ a.btn.primary{color:var(--accent-ink)}
     const dist = s => { const p = toView(s); return Math.hypot(p.x - 200, p.y - TOP_CY); };
     const reach = state.stems.length ? Math.max(...state.stems.map(dist)) : 60;
     const R = clamp(reach + 44, 96, 192);
-    const paper = state.wrap === 'none' ? '' : `<defs>${wrapDefs(w)}</defs><g pointer-events="none" filter="url(#wrapGrain)" transform="translate(200 ${TOP_CY})">`
-      + ring(10, (a, i) => `<ellipse cy="${(-R * .6).toFixed(1)}" rx="${(R * .36).toFixed(1)}" ry="${(R * .44).toFixed(1)}" transform="rotate(${a + 9})" fill="${i % 2 ? w.side : w.front}" stroke="${w.back}" stroke-width="1"/>`)
-      + `<circle r="${(R * .64).toFixed(1)}" fill="${w.back}"/></g>`;
-    const leaves = `<circle cx="200" cy="${TOP_CY}" r="${(R * .58).toFixed(1)}" fill="#4F7A45" opacity=".55" pointer-events="none"/>`;
+    const paper = state.wrap === 'none' ? ''
+      : `<g pointer-events="none" transform="translate(200 ${TOP_CY})">${wrapTopSvg(w, R)}</g>`;
+    const TOP_BED_INSET = .78, TOP_BED_SPRIG = .5;   // seen from above the greenery only peeks out from under the heads
+    const bed = greeneryBed(200, TOP_CY, reach * TOP_BED_INSET + 10, reach * TOP_BED_INSET + 10, 200, TOP_CY, TOP_BED_SPRIG);
     // outer heads sit lower in the dome, so they are drawn first and the centre ends up on top
     const heads = [...state.stems].sort((a, b) => fillerFirst(a, b) || dist(b) - dist(a));
-    return paper + (state.stems.length ? leaves : '') + heads.map(s => headSvg(s)).join('') + giftsScene('top') + emptyNote(TOP_CY);
+    return PHOTO_DEFS + `<defs>${wrapDefs(w)}</defs>` + paper + (state.stems.length ? bed : '') + heads.map(s => headSvg(s)).join('')
+      + (state.stems.length ? domeShade(200, TOP_CY, reach + 34, reach + 34) : '') + giftsScene('top') + emptyNote(TOP_CY);
   }
 
   function renderStage() {
@@ -596,16 +719,33 @@ a.btn.primary{color:var(--accent-ink)}
   const giftPreview = key => `<svg viewBox="-36 -86 72 90" aria-hidden="true">${drawGift(key)}</svg>`;
 
   function itemCard({attr, key, name, price, n, art, max = Infinity}) {
-    return `<div class="item${n ? ' on' : ''}">${art}<div class="nm">${name}</div><div class="pr">${rub(price)} / шт</div>`
+    return `<div class="item${n ? ' on' : ''}"><div class="thumb">${art}</div><div class="nm">${name}</div><div class="pr">${rub(price)} / шт</div>`
       + `<div class="step"><button type="button" data-${attr}="${key}" data-d="-1" aria-label="Убрать: ${name}"${n ? '' : ' disabled'}>−</button>`
       + `<output aria-live="polite">${n}</output>`
       + `<button type="button" data-${attr}="${key}" data-d="1" aria-label="Добавить: ${name}"${n < max ? '' : ' disabled'}>+</button></div></div>`;
   }
 
+  /* catalog filter: 'all', 'picked' or a FLOWER_GROUPS key; view state only, not saved */
+  let flowerFilter = 'all';
+  const matchesFilter = (kind, filter) => filter === 'all' || (filter === 'picked' ? countOf(kind) > 0 : flowerGroup(KINDS[kind]) === filter);
+
+  function renderFilters() {
+    const kinds = Object.keys(KINDS), picked = kinds.filter(k => countOf(k) > 0).length;
+    const chips = [{key:'all', label:'Все', n:kinds.length},
+      ...FLOWER_GROUPS.map(g => ({key:g.key, label:g.label, n:kinds.filter(k => flowerGroup(KINDS[k]) === g.key).length})).filter(c => c.n),
+      {key:'picked', label:'В букете', n:picked}];
+    document.getElementById('flowerFilters').innerHTML = chips.map(c =>
+      `<button type="button" data-filter="${c.key}" aria-pressed="${c.key === flowerFilter}">${c.label}<small>${c.n}</small></button>`).join('');
+  }
+
   function renderCatalog() {
     const full = state.stems.length >= MAX_STEMS;
-    document.getElementById('catalog').innerHTML = Object.entries(KINDS).map(([kind, k]) =>
-      itemCard({attr:'kind', key:kind, name:k.name, price:k.price, n:countOf(kind), art:preview(kind), max: full ? countOf(kind) : Infinity})).join('');
+    const shown = Object.entries(KINDS).filter(([kind]) => matchesFilter(kind, flowerFilter));
+    renderFilters();
+    document.getElementById('catalog').innerHTML = shown.length
+      ? shown.map(([kind, k]) =>
+        itemCard({attr:'kind', key:kind, name:k.name, price:k.price, n:countOf(kind), art:preview(kind), max: full ? countOf(kind) : Infinity})).join('')
+      : `<p class="grid-empty">В букете пока нет цветов. <button type="button" class="link" data-filter="all">Показать все</button></p>`;
     document.getElementById('gifts').innerHTML = Object.entries(GIFTS).map(([key, g]) =>
       itemCard({attr:'gift', key, name:g.name, price:g.price, n:state.gifts[key] || 0, art:giftPreview(key), max:GIFT_MAX})).join('');
   }
@@ -696,12 +836,23 @@ a.btn.primary{color:var(--accent-ink)}
 
   const sumOf = (counts, catalog) => Object.entries(counts || {}).reduce((a, [k, n]) => a + catalog[k].price * n, 0);
   const presetPrice = p => sumOf(p.items, KINDS) + WRAPS[p.wrap].price + sumOf(p.gifts, GIFTS);
+  const PRESET_THUMBS = 3;
+  /* the preset's main flowers, most numerous first, as overlapping round photos */
+  const presetThumbs = p => `<span class="cthumbs" aria-hidden="true">${Object.entries(p.items)
+    .filter(([k]) => !KINDS[k].filler).sort((a, b) => b[1] - a[1]).slice(0, PRESET_THUMBS)
+    .map(([k]) => `<span class="ct">${preview(k)}</span>`).join('')}</span>`;
   document.getElementById('presets').innerHTML = PRESETS.map((p, i) =>
-    `<button type="button" class="combo" data-preset="${i}"><span class="cn">${p.name}</span><span class="cd">${p.desc}</span>`
+    `<button type="button" class="combo" data-preset="${i}">${presetThumbs(p)}<span class="cn">${p.name}</span><span class="cd">${p.desc}</span>`
     + `<span class="cp">${rub(presetPrice(p))}${p.gifts ? '<span class="tag">с подарком</span>' : ''}</span></button>`).join('');
   document.querySelector('.panel').addEventListener('click', ev => {
     const b = ev.target.closest('button');
     if (!b) return;
+    if (b.dataset.filter) {
+      flowerFilter = b.dataset.filter;
+      renderCatalog();
+      document.querySelector(`#flowerFilters [data-filter="${flowerFilter}"]`).scrollIntoView({block:'nearest', inline:'nearest'});
+      return;
+    }
     if (b.dataset.kind) setCount(b.dataset.kind, Number(b.dataset.d));
     else if (b.dataset.gift) setGift(b.dataset.gift, Number(b.dataset.d));
     else if (b.dataset.wrap) update({wrap: b.dataset.wrap}, {rearrange:false});
@@ -765,6 +916,9 @@ a.btn.primary{color:var(--accent-ink)}
   document.title = SHOP.name;
   document.querySelector('header h1').textContent = SHOP.name;
   document.querySelector('header .lede').textContent = SHOP.tagline;
+  const contact = document.getElementById('waContact');
+  if (shopPhone) contact.href = whatsappUrl(shopPhone, 'Здравствуйте! У меня вопрос по букету');
+  else contact.hidden = true;
   document.getElementById('cardPrice').textContent = rub(CARD.price);
 
   if (load()) render(); else if (PRESETS.length) applyPreset(PRESETS[0]); else render();

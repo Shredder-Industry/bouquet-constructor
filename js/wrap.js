@@ -100,4 +100,24 @@ function wrapFrontSvg(w, e, bind) {
     + `<g filter="url(#wrapShadow)"><g filter="url(#wrapGrain)">${left}${right}</g></g>`;
 }
 
-if (typeof module !== 'undefined') module.exports = { shade, wrapDefs, wrapBackSvg, wrapFrontSvg, WRAP_GRAIN };
+const WRAP_TOP_SHEETS = 12;
+
+/* top view: sheets fan out from under the flowers, darker towards the centre where the cone narrows */
+function wrapTopSvg(w, R) {
+  const half = R * .28, soft = w.texture === 'felt' ? 1.4 : 1;
+  const sheets = Array.from({ length: WRAP_TOP_SHEETS }, (_, i) => {
+    const angle = i * 360 / WRAP_TOP_SHEETS + (i % 2 ? 7 : -4), reach = R * (i % 2 ? .94 : 1);
+    const d = `M${f1(-half)} ${f1(-R * .3)}`
+      + `Q${f1(-half - WRAP_SIDE_BULGE * soft)} ${f1(-reach * .7)} ${f1(-half * 1.25)} ${f1(-reach * .9)}`
+      + `C${f1(-half * .6)} ${f1(-reach * 1.04)} ${f1(half * .6)} ${f1(-reach * 1.02)} ${f1(half * 1.25)} ${f1(-reach * .88)}`
+      + `Q${f1(half + WRAP_SIDE_BULGE * soft)} ${f1(-reach * .7)} ${f1(half)} ${f1(-R * .3)}Z`;
+    return `<path d="${d}" transform="rotate(${f1(angle)})" fill="url(#wrapTop${i % 2})"/>`;
+  });
+  const radial = (id, color) => `<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${f1(R)}">`
+    + `<stop offset=".3" stop-color="${shade(color, -.3)}"/><stop offset="1" stop-color="${shade(color, .1)}"/></radialGradient>`;
+  return `<defs>${radial('wrapTop0', w.front)}${radial('wrapTop1', w.side)}</defs>`
+    + `<g filter="url(#wrapGrain)">${sheets.join('')}</g>`
+    + `<circle r="${f1(R * .6)}" fill="#000" opacity=".3" filter="url(#wrapBlur)"/>`;
+}
+
+if (typeof module !== 'undefined') module.exports = { shade, wrapDefs, wrapBackSvg, wrapFrontSvg, wrapTopSvg, WRAP_GRAIN };

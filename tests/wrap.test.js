@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { shade, wrapDefs, wrapBackSvg, wrapFrontSvg } = require('../js/wrap.js');
+const { shade, wrapDefs, wrapBackSvg, wrapFrontSvg, wrapTopSvg } = require('../js/wrap.js');
 
 const kraft = { name: 'Крафт', front: '#C8A276', side: '#B08856', back: '#A07A4B', texture: 'kraft' };
 const extents = { minX: 120, maxX: 280, minY: 150, maxY: 260 };
@@ -32,4 +32,11 @@ test('defs declare the grain filter and shadow once', () => {
   const defs = wrapDefs();
   assert.equal(defs.match(/id="wrapGrain"/g).length, 1);
   assert.equal(defs.match(/id="wrapShadow"/g).length, 1);
+});
+
+test('top view wrap is a grained ring of soft sheets around the centre', () => {
+  const top = wrapTopSvg(kraft, 150);
+  assert.doesNotMatch(top, /NaN|undefined/);
+  assert.match(top, /url\(#wrapGrain\)/);
+  assert.ok(top.match(/<path /g).length >= 10, 'several sheets around the bouquet');
 });
